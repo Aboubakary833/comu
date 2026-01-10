@@ -19,11 +19,9 @@ Some architectural decisions may evolve as I advance.
 
 - Enforce clear boundaries between modules
 
-- Practice dependency inversion without a framework
-
 - Explore Clean architecture design
 
-- Try to make modules communicate without event broker
+- Make modules communicate without event broker
 
 - Prepare a possible future migration to microservices
 
@@ -55,7 +53,7 @@ Each module follows the same structure:
 
 - **infra**: repositories, external services
 
-- **presentation**: HTTP handlers, routes, public API implementation
+- **presentation**: HTTP handlers, routes...(UI also goes there)
 
 *module.go*: The module entry point and its public API interface and dependency exposure
 

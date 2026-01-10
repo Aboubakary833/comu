@@ -115,8 +115,8 @@ func (repo *inMemoryCommentsRepository) Find(ctx context.Context, ID uuid.UUID) 
 	return nil, domain.ErrCommentNotFound
 }
 
-func (repo *inMemoryCommentsRepository) Delete(ctx context.Context, ID uuid.UUID) error {
-	_, err := repo.Find(ctx, ID)
+func (repo *inMemoryCommentsRepository) Delete(ctx context.Context, comment *domain.Comment) error {
+	_, err := repo.Find(ctx, comment.ID)
 
 	if err != nil {
 		return err
@@ -124,7 +124,7 @@ func (repo *inMemoryCommentsRepository) Delete(ctx context.Context, ID uuid.UUID
 	repo.Lock()
 	defer repo.Unlock()
 
-	delete(repo.store, ID)
+	delete(repo.store, comment.ID)
 
 	return nil
 }

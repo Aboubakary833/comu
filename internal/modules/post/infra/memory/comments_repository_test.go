@@ -150,6 +150,6 @@ func TestInMemoryCommentsRepositoryDeleteMethod(t *testing.T) {
 
 	repo.Store(ctx, comment)
 
-	err := repo.Delete(ctx, comment.ID)
+	err := repo.Delete(ctx, comment)
 	assert.NoError(t, err)
 }
