@@ -31,17 +31,32 @@ func TestCreatePostUseCase(t *testing.T) {
 }
 
 func TestDeletePostUseCase(t *testing.T) {
-	repo := memory.NewInMemoryPostsRepository(nil)
-	ctx := context.Background()
+	t.Run("it should successfully delete the post", func(t *testing.T) {
+		repo := memory.NewInMemoryPostsRepository(nil)
+		ctx := context.Background()
+		userID := uuid.New()
 
-	post := domain.NewPost(uuid.New(), "Test post", "Weird test post content")
-	repo.Store(ctx, post)
+		post := domain.NewPost(userID, "Test post", "Weird test post content")
+		repo.Store(ctx, post)
 
-	useCase := NewDeletePostUseCase(repo)
-	err := useCase.Execute(ctx, post.ID)
+		useCase := NewDeletePostUseCase(repo)
+		err := useCase.Execute(ctx, post.ID, userID)
 
-	if assert.NoError(t, err) {
-		_, err = repo.FindByID(ctx, post.ID)
-		assert.ErrorIs(t, err, domain.ErrPostNotFound)
-	}
+		if assert.NoError(t, err) {
+			_, err = repo.FindByID(ctx, post.ID)
+			assert.ErrorIs(t, err, domain.ErrPostNotFound)
+		}
+	})
+
+	t.Run("it should fail and return ErrUnauthorized", func(t *testing.T) {
+		repo := memory.NewInMemoryPostsRepository(nil)
+		ctx := context.Background()
+
+		post := domain.NewPost(uuid.New(), "Test post", "Weird test post content")
+		repo.Store(ctx, post)
+
+		useCase := NewDeletePostUseCase(repo)
+		err := useCase.Execute(ctx, post.ID, uuid.New())
+		assert.ErrorIs(t, err, domain.ErrUnauthorized)
+	})
 }

@@ -8,9 +8,10 @@ import (
 )
 
 type UpdatePostInput struct {
-	PostID uuid.UUID
-	Title 	string
-	Content string
+	PostID   uuid.UUID
+	AuthorID uuid.UUID
+	Title    string
+	Content  string
 }
 
 type updatePostUC struct {
@@ -30,6 +31,10 @@ func (useCase *updatePostUC) Execute(ctx context.Context, input UpdatePostInput)
 		return
 	}
 
+	if post.UserID != input.AuthorID {
+		return "", domain.ErrUnauthorized
+	}
+
 	if input.Title != post.Title {
 		slug := domain.MakePostSlug(input.Title)
 		post.Title = input.Title
@@ -41,6 +46,6 @@ func (useCase *updatePostUC) Execute(ctx context.Context, input UpdatePostInput)
 	if err != nil {
 		return
 	}
-	
+
 	return post.Slug, nil
 }

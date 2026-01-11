@@ -16,14 +16,16 @@ func TestUpdatePostUseCase(t *testing.T) {
 		repo := memory.NewInMemoryPostsRepository(nil)
 		ctx := context.Background()
 		_assert := assert.New(t)
+		userID := uuid.New()
 
-		post := domain.NewPost(uuid.New(), "Test post title", "This is test post title")
+		post := domain.NewPost(userID, "Test post title", "This is test post title")
 		repo.Store(ctx, post)
 
 		useCase := NewUpdatePostUseCase(repo)
 
 		slug, err := useCase.Execute(ctx, UpdatePostInput{
 			PostID: post.ID,
+			AuthorID: userID,
 			Title: "Updated test post title",
 			Content: "Test post updated content",
 		})
@@ -42,14 +44,16 @@ func TestUpdatePostUseCase(t *testing.T) {
 		repo := memory.NewInMemoryPostsRepository(nil)
 		ctx := context.Background()
 		_assert := assert.New(t)
+		userID := uuid.New()
 
-		post := domain.NewPost(uuid.New(), "Test post title", "This is test post title")
+		post := domain.NewPost(userID, "Test post title", "This is test post title")
 		repo.Store(ctx, post)
 
 		useCase := NewUpdatePostUseCase(repo)
 
 		slug, err := useCase.Execute(ctx, UpdatePostInput{
 			PostID: post.ID,
+			AuthorID: userID,
 			Title: post.Title,
 			Content: "Test post updated content",
 		})
@@ -62,5 +66,24 @@ func TestUpdatePostUseCase(t *testing.T) {
 			_assert.Equal(post.CreatedAt, retrievedPost.CreatedAt)
 			_assert.NotEqual(post.UpdatedAt, retrievedPost.UpdatedAt)
 		}
+	})
+
+	t.Run("it should fail and return ErrUnauthorized", func(t *testing.T) {
+		repo := memory.NewInMemoryPostsRepository(nil)
+		ctx := context.Background()
+
+		post := domain.NewPost(uuid.New(), "Test post title", "This is test post title")
+		repo.Store(ctx, post)
+
+		useCase := NewUpdatePostUseCase(repo)
+
+		_, err := useCase.Execute(ctx, UpdatePostInput{
+			PostID: post.ID,
+			AuthorID: uuid.New(),
+			Title: post.Title,
+			Content: "Test post updated content",
+		})
+
+		assert.ErrorIs(t, err, domain.ErrUnauthorized)
 	})
 }

@@ -45,11 +45,15 @@ func (useCase *createPostUC) Execute(ctx context.Context, input CreatePostInput)
 	return post, nil
 }
 
-func (useCase *deletePostUC) Execute(ctx context.Context, postID uuid.UUID) error {
+func (useCase *deletePostUC) Execute(ctx context.Context, postID, authorID uuid.UUID) error {
 	post, err := useCase.repo.FindByID(ctx, postID)
 
 	if err != nil {
 		return err
+	}
+
+	if post.UserID != authorID {
+		return domain.ErrUnauthorized
 	}
 
 	return useCase.repo.Delete(ctx, post)

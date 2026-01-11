@@ -46,12 +46,17 @@ func (useCase *createCommentUC) Execute(ctx context.Context, input CreateComment
 }
 
 
-func (useCase *updateCommentUC) Execute(ctx context.Context, commentID uuid.UUID, content string) error {
+func (useCase *updateCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID, content string) error {
 	comment, err := useCase.repo.Find(ctx, commentID)
 
 	if err != nil {
 		return err
 	}
+
+	if comment.UserID != authorID {
+		return domain.ErrUnauthorized
+	}
+
 	comment.Content = content
 
 	return useCase.repo.Update(ctx, comment)

@@ -13,6 +13,7 @@ import (
 var (
 	ErrPostNotFound    = errors.New("the post you're looking for does'nt exist")
 	ErrCommentNotFound = errors.New("the comment you're looking for does'nt exist")
+	ErrUnauthorized	   = errors.New("sorry, you can't perform this action")
 )
 
 const DefaultPaginatorLimit = 10

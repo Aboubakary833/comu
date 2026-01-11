@@ -30,8 +30,20 @@ func TestUpdateCommentUseCase(t *testing.T) {
 		repo := memory.NewInMemoryCommentsRepository(nil)
 		useCase := NewUpdateCommentUseCase(repo)
 
-		err := useCase.Execute(context.Background(), uuid.New(), "Test comment text")
+		err := useCase.Execute(context.Background(), uuid.New(), uuid.New(), "Test comment text")
 		assert.ErrorIs(t, err, domain.ErrCommentNotFound)
+	})
+
+	t.Run("it should fail and return ErrUnauthorized", func(t *testing.T) {
+		repo := memory.NewInMemoryCommentsRepository(nil)
+		ctx := context.Background()
+
+		comment := domain.NewComment(uuid.New(), uuid.New(), "Comment content")
+		repo.Store(ctx, comment)
+
+		useCase := NewUpdateCommentUseCase(repo)
+		err := useCase.Execute(ctx, comment.ID, uuid.New(), "Updated comment content")
+		assert.ErrorIs(t, err, domain.ErrUnauthorized)
 	})
 
 	t.Run("it should successfully update the comment", func(t *testing.T) {
@@ -43,7 +55,7 @@ func TestUpdateCommentUseCase(t *testing.T) {
 		repo.Store(ctx, comment)
 
 		useCase := NewUpdateCommentUseCase(repo)
-		err := useCase.Execute(ctx, comment.ID, "Updated comment content")
+		err := useCase.Execute(ctx, comment.ID, comment.UserID, "Updated comment content")
 
 		if _assert.NoError(err) {
 			retrievedComment, _ := repo.Find(ctx, comment.ID)
