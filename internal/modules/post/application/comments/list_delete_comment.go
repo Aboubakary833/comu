@@ -21,6 +21,13 @@ func NewListCommentsUseCase(repository domain.CommentRepository) *listCommentsUC
 	}
 }
 
+func NewDeleteCommentUseCase(repository domain.CommentRepository) *deleteCommentUC {
+	return &deleteCommentUC{
+		repo: repository,
+	}
+}
+
+
 func (useCase *listCommentsUC) Execute(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, *domain.Cursor, error) {
 	if paginator.Limit <= 0 {
 		paginator.Limit = domain.DefaultPaginatorLimit
@@ -35,11 +42,15 @@ func (useCase *listCommentsUC) Execute(ctx context.Context, postID uuid.UUID, pa
 	return comments, cursor, nil
 }
 
-func (useCase *deleteCommentUC) Execute(ctx context.Context, commentID uuid.UUID) error {
+func (useCase *deleteCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID) error {
 	comment, err := useCase.repo.Find(ctx, commentID)
 
 	if err != nil {
 		return err
+	}
+
+	if comment.UserID != authorID {
+		return domain.ErrUnauthorized
 	}
 
 	return useCase.repo.Delete(ctx, comment)
