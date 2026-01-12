@@ -8,12 +8,16 @@ import (
 )
 
 type Config struct {
-	AppName  string `mapstructure:"APP_NAME"`
-	AppEnv   string `mapstructure:"APP_ENV"`
-	AppKey   string `mapstructure:"APP_KEY"`
-	AppAddr  string `mapstructure:"APP_ADDR"`
-	DBDriver string `mapstructure:"DB_DRIVER"`
-	DBSource string `mapstructure:"DB_SOURCE"`
+	AppName      string `mapstructure:"APP_NAME"`
+	AppEnv       string `mapstructure:"APP_ENV"`
+	AppKey       string `mapstructure:"APP_KEY"`
+	AppAddr      string `mapstructure:"APP_ADDR"`
+	DBDriver     string `mapstructure:"DB_DRIVER"`
+	DBSource     string `mapstructure:"DB_SOURCE"`
+	MailHost     string `mapstructure:"MAIL_HOST"`
+	MailPort     int    `mapstructure:"MAIL_PORT"`
+	MailUserName string `mapstructure:"MAIL_USERNAME"`
+	MailPassword string `mapstructure:"MAIL_PASSWORD"`
 }
 
 func NewConfig() (*Config, error) {
@@ -52,4 +56,8 @@ func setEnvDefaultVariables() {
 	viper.SetDefault("APP_KEY", appKey)
 	viper.SetDefault("DB_DRIVER", "mysql")
 	viper.SetDefault("DB_SOURCE", "abubakr:root@/comu_db?parseTime=true")
+	viper.SetDefault("MAIL_HOST", "smtp.zoho.com")
+	viper.SetDefault("MAIL_PORT", "465")
+	viper.SetDefault("MAIL_USERNAME", "")
+	viper.SetDefault("MAIL_PASSWORD", "")
 }

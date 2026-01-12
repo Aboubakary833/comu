@@ -9,21 +9,21 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type JwtService struct {
+type jwtService struct {
 	secret         string
 	accessTokenTTL time.Duration
 	logger         *shared.Log
 }
 
-func NewJwtService(secret string, accessTokenTTL time.Duration, logger *shared.Log) *JwtService {
-	return &JwtService{
+func NewJwtService(secret string, accessTokenTTL time.Duration, logger *shared.Log) *jwtService {
+	return &jwtService{
 		secret:         secret,
 		accessTokenTTL: accessTokenTTL,
 		logger:         logger,
 	}
 }
 
-func (service *JwtService) GenerateToken(user *domain.AuthUser) (string, error) {
+func (service *jwtService) GenerateToken(user *domain.AuthUser) (string, error) {
 	expirationTime := time.Now().Add(service.accessTokenTTL)
 
 	claims := jwt.MapClaims{
@@ -44,7 +44,7 @@ func (service *JwtService) GenerateToken(user *domain.AuthUser) (string, error) 
 	return tokenString, nil
 }
 
-func (service *JwtService) ValidateToken(tokenString string) (jwt.Claims, error) {
+func (service *jwtService) ValidateToken(tokenString string) (jwt.Claims, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, domain.ErrInvalidToken

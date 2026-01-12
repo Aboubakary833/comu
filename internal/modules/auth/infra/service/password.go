@@ -7,24 +7,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type PasswordService struct {
+type passwordService struct {
 	logger *shared.Log
 }
 
-func NewPasswordService(logger *shared.Log) *PasswordService {
-	return &PasswordService{
+func NewPasswordService(logger *shared.Log) *passwordService {
+	return &passwordService{
 		logger: logger,
 	}
 }
 
-func (service *PasswordService) Compare(hashedPassword, password string) error {
+func (service *passwordService) Compare(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword(
 		[]byte(hashedPassword),
 		[]byte(password),
 	)
 }
 
-func (service *PasswordService) Hash(password string) (string, error) {
+func (service *passwordService) Hash(password string) (string, error) {
 	hashBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 	if err != nil {
