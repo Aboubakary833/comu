@@ -21,7 +21,13 @@ func NewResendOtpRequestsRepository(db *sql.DB) *resendOtpRequestsRepository {
 }
 
 func (repo *resendOtpRequestsRepository) findQuery(ctx context.Context, column, value string) (*domain.ResendOtpRequest, error) {
-	query := fmt.Sprintf("SELECT * FROM resend_otp_requests WHERE %s = ?", column)
+	queryVal := "?"
+
+	if column == "id" {
+		queryVal = "UUID_TO_BIN(?)"
+	}
+
+	query := fmt.Sprintf("SELECT * FROM resend_otp_requests WHERE %s = %s", column, queryVal)
 	req := &domain.ResendOtpRequest{}
 
 	err := repo.db.QueryRowContext(ctx, query, value).Scan(
@@ -51,7 +57,7 @@ func (repo *resendOtpRequestsRepository) FindByUserEmail(ctx context.Context, us
 func (repo *resendOtpRequestsRepository) Store(ctx context.Context, req *domain.ResendOtpRequest) error {
 	query := `
 		INSERT INTO resend_otp_requests (id, user_email, count, last_sent_at, created_at)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (UUID_TO_BIN(?), ?, ?, ?, ?)
 	`
 
 	_, err := repo.db.ExecContext(
@@ -68,7 +74,7 @@ func (repo *resendOtpRequestsRepository) CreateNew(ctx context.Context, userEmai
 }
 
 func (repo *resendOtpRequestsRepository) Delete(ctx context.Context, req *domain.ResendOtpRequest) error {
-	query := "DELETE FROM resend_otp_requests WHERE id = ?"
+	query := "DELETE FROM resend_otp_requests WHERE id = UUID_TO_BIN(?)"
 	_, err := repo.db.ExecContext(ctx, query, req.ID.String())
 
 	return err

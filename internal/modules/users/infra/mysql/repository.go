@@ -10,18 +10,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type mySqlRepository struct {
+type repository struct {
 	db *sql.DB
 }
 
-func NewMysqlRepository(db *sql.DB) *mySqlRepository {
-	return &mySqlRepository{
+func NewRepository(db *sql.DB) *repository {
+	return &repository{
 		db: db,
 	}
 }
 
-func (repo *mySqlRepository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
-	query := "SELECT * FROM users WHERE id = ?"
+func (repo *repository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
+	query := "SELECT * FROM users WHERE id = UUID_TO_BIN(?)"
 	user := &domain.User{}
 
 	err := repo.db.QueryRowContext(ctx, query, ID).Scan(
@@ -39,13 +39,13 @@ func (repo *mySqlRepository) FindByID(ctx context.Context, ID uuid.UUID) (*domai
 	return user, nil
 }
 
-func (repo *mySqlRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (repo *repository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
 		SELECT 
 			id, name, email, email_verified_at, avatar,
 			active, password, created_at, updated_at, deleted_at
 		FROM users
-		WHERE id = ?
+		WHERE id = UUID_TO_BIN(?)
 	`
 
 	user := &domain.User{}
@@ -65,12 +65,12 @@ func (repo *mySqlRepository) FindByEmail(ctx context.Context, email string) (*do
 	return user, nil
 }
 
-func (repo *mySqlRepository) Store(ctx context.Context, user *domain.User) error {
+func (repo *repository) Store(ctx context.Context, user *domain.User) error {
 	query := `
 	INSERT INTO users (
 		id, name, email, email_verified_at, avatar, active,
 		password, created_at, updated_at, deleted_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	) VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	id, err := uuid.NewV7()
@@ -89,10 +89,12 @@ func (repo *mySqlRepository) Store(ctx context.Context, user *domain.User) error
 	return err
 }
 
-func (repo *mySqlRepository) Update(ctx context.Context, user *domain.User) error {
+func (repo *repository) Update(ctx context.Context, user *domain.User) error {
 	query := `UPDATE users SET name = ?, email = ?, email_verified_at = ?,
 	avatar = ?, active = ?, password = ?, updated_at = ?,
-	deleted_at = ? WHERE id = ?`
+	deleted_at = ? WHERE id = UUID_TO_BIN(?)`
+
+	user.UpdatedAt = time.Now()
 
 	_, err := repo.db.ExecContext(
 		ctx, query, user.Name, user.Email, user.EmailVerifiedAt,
@@ -103,9 +105,9 @@ func (repo *mySqlRepository) Update(ctx context.Context, user *domain.User) erro
 	return err
 }
 
-func (repo *mySqlRepository) Delete(ctx context.Context, user *domain.User) error {
+func (repo *repository) Delete(ctx context.Context, user *domain.User) error {
 	deleteTime := time.Now()
-	query := "UPDATE users SET deleted_at = ? WHERE id = ?"
+	query := "UPDATE users SET deleted_at = ? WHERE id = UUID_TO_BIN(?)"
 	
 	user.DeletedAt = &deleteTime
 	_, err := repo.db.ExecContext(ctx, query, deleteTime, user.ID)

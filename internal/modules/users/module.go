@@ -56,7 +56,7 @@ type UserModule struct {
 }
 
 func NewModule(db *sql.DB) *UserModule {
-	repo := mysql.NewMysqlRepository(db)
+	repo := mysql.NewRepository(db)
 	api := newApi(repo)
 
 	return &UserModule{

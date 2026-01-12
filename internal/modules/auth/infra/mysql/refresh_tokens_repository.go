@@ -40,7 +40,7 @@ func (repo *refreshTokensRepository) Find(ctx context.Context, tokenString strin
 func (repo *refreshTokensRepository) Store(ctx context.Context, token *domain.RefreshToken) error {
 	query := `
 		INSERT INTO refresh_tokens (user_id, token, expired_at, created_at, revoked)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (UUID_TO_BIN(?), ?, ?, ?, ?)
 	`
 
 	_, err := repo.db.ExecContext(
