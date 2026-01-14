@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type generateResetTokenUC struct {
+type GenerateResetTokenUC struct {
 	userService           domain.UserService
 	resetTokensRepository domain.ResetTokensRepository
 }
@@ -13,14 +13,14 @@ type generateResetTokenUC struct {
 func NewGenResetTokenUseCase(
 	userService domain.UserService,
 	resetTokensRepository domain.ResetTokensRepository,
-) *generateResetTokenUC {
-	return &generateResetTokenUC{
+) *GenerateResetTokenUC {
+	return &GenerateResetTokenUC{
 		userService:           userService,
 		resetTokensRepository: resetTokensRepository,
 	}
 }
 
-func (useCase *generateResetTokenUC) Execute(ctx context.Context, userEmail string) (tokenString string, err error) {
+func (useCase *GenerateResetTokenUC) Execute(ctx context.Context, userEmail string) (tokenString string, err error) {
 	user, err := useCase.userService.GetUserByEmail(ctx,userEmail)
 
 	if err != nil {

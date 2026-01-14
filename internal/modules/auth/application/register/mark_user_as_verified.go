@@ -5,16 +5,16 @@ import (
 	"context"
 )
 
-type markUserAsVerifiedUC struct {
+type MarkUserAsVerifiedUC struct {
 	userService domain.UserService
 }
 
-func NewMarkUserAsVerifiedUseCase(userService domain.UserService) *markUserAsVerifiedUC {
-	return &markUserAsVerifiedUC{
+func NewMarkUserAsVerifiedUseCase(userService domain.UserService) *MarkUserAsVerifiedUC {
+	return &MarkUserAsVerifiedUC{
 		userService: userService,
 	}
 }
 
-func (useCase *markUserAsVerifiedUC) Execute(ctx context.Context, userEmail string) error {
+func (useCase *MarkUserAsVerifiedUC) Execute(ctx context.Context, userEmail string) error {
 	return useCase.userService.MarkUserEmailAsVerified(ctx, userEmail)
 }

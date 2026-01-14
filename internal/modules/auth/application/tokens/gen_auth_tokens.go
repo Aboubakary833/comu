@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type generateAuthTokensUC struct {
+type GenerateAuthTokensUC struct {
 	jwtService              domain.JwtService
 	userService             domain.UserService
 	refreshTokensRepository domain.RefreshTokensRepository
@@ -15,15 +15,15 @@ func NewGenAuthTokensUseCase(
 	jwtService domain.JwtService,
 	userService domain.UserService,
 	refreshTokensRepository domain.RefreshTokensRepository,
-) *generateAuthTokensUC {
-	return &generateAuthTokensUC{
+) *GenerateAuthTokensUC {
+	return &GenerateAuthTokensUC{
 		jwtService:              jwtService,
 		userService:             userService,
 		refreshTokensRepository: refreshTokensRepository,
 	}
 }
 
-func (useCase *generateAuthTokensUC) Execute(ctx context.Context, userEmail string) (accessToken, refreshToken string, err error) {
+func (useCase *GenerateAuthTokensUC) Execute(ctx context.Context, userEmail string) (accessToken, refreshToken string, err error) {
 	user, err := useCase.userService.GetUserByEmail(ctx, userEmail)
 
 	if err != nil {

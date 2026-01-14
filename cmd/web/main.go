@@ -2,18 +2,17 @@ package main
 
 import (
 	"comu/config"
-	"comu/internal/shared"
+	"comu/internal/shared/logger"
 	"database/sql"
-	"net/http"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 
-	logger := shared.NewLogger()
+	logger := logger.NewLogger()
 	config, err := config.NewConfig()
 
 	if err != nil {
@@ -29,19 +28,17 @@ func main() {
 
 	// Initialize modules and inject db and logging dependencies
 
-	router := chi.NewRouter().With(
-		middleware.Logger,
-		middleware.Recoverer,
-		middleware.CleanPath,
-		middleware.RedirectSlashes,
-	)
+	e := echo.New()
+	e.Use(
+		middleware.RequestLogger(),
+		middleware.Recover(),
+		middleware.RemoveTrailingSlash(),
+		middleware.Secure(),
+	)	
+
 	// Register modules routes
 
-	logger.Info.Printf("Server listening on %s\n", config.AppAddr)
-
-	if err := http.ListenAndServe(config.AppAddr, router); err != nil {
-		logger.Error.Fatalln(err.Error())
-	}
+	e.Logger.Fatal(e.Start(config.AppAddr))
 }
 
 func openDB(driver, dsn string) (*sql.DB, error) {

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type getUserByIdUC struct {
+type GetUserByIdUC struct {
 	repo domain.Repository
 }
 
@@ -15,8 +15,8 @@ type getUserByEmailUC struct {
 	repo domain.Repository
 }
 
-func NewGetUserByIdUseCase(repo domain.Repository) *getUserByIdUC {
-	return &getUserByIdUC{
+func NewGetUserByIdUseCase(repo domain.Repository) *GetUserByIdUC {
+	return &GetUserByIdUC{
 		repo: repo,
 	}
 }
@@ -27,7 +27,7 @@ func NewGetUserByEmailUseCase(repo domain.Repository) *getUserByEmailUC {
 	}
 }
 
-func (useCase *getUserByIdUC) Execute(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
+func (useCase *GetUserByIdUC) Execute(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
 	user, err := useCase.repo.FindByID(ctx, ID)
 
 	if err != nil {

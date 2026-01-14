@@ -1,4 +1,4 @@
-package newPassword
+package resetPassword
 
 import (
 	"comu/internal/modules/auth/domain"
@@ -25,7 +25,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 
 		passwordService.On("Hash", newPassword).Return(hashedNewPassword, nil)
 
-		useCase := NewUseCase(userService, passwordService, notificationService, resetTokensRepository)
+		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(context.Background(), tokenString, newPassword)
 		
@@ -52,7 +52,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		passwordService.On("Hash", newPassword).Return(hashedNewPassword, nil)
 		userService.On("UpdateUserPassword", ctx, userID, hashedNewPassword).Return(domain.ErrUserNotFound)
 
-		useCase := NewUseCase(userService, passwordService, notificationService, resetTokensRepository)
+		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(ctx, token.Token, newPassword)
 		
@@ -80,7 +80,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		userService.On("UpdateUserPassword", ctx, userID, hashedNewPassword).Return(nil)
 		notificationService.On("SendPasswordChangedMessage", token.UserEmail).Return(nil)
 
-		useCase := NewUseCase(userService, passwordService, notificationService, resetTokensRepository)
+		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(ctx, token.Token, newPassword)
 		

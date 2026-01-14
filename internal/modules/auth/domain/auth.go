@@ -34,6 +34,7 @@ var (
 	ErrExpiredOtp                   = errors.New("the provided otp code has expired")
 	ErrOtpValueTaken                = errors.New("the provided otp is already taken")
 	ErrUserNotFound                 = errors.New("no user was found")
+	ErrUserEmailTaken               = errors.New("the provided email is already taken")
 	ErrInvalidCredentials           = errors.New("invalid credentials. Please try with another credentials")
 	ErrResendRequestNotFound        = errors.New("no resend otp request found")
 	ErrInvalidResendRequest         = errors.New("the provided opt resend request is invalid")
@@ -149,7 +150,7 @@ func (token *RefreshToken) Expired() bool {
 }
 
 func (token *RefreshToken) ExpireInNext24H() bool {
-	return time.Until(token.ExpiredAt) <= time.Hour * 24
+	return time.Until(token.ExpiredAt) <= time.Hour*24
 }
 
 func (otpCode *OtpCode) Expired() bool {

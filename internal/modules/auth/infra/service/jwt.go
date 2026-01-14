@@ -2,7 +2,7 @@ package service
 
 import (
 	"comu/internal/modules/auth/domain"
-	"comu/internal/shared"
+	"comu/internal/shared/logger"
 	"errors"
 	"time"
 
@@ -12,10 +12,10 @@ import (
 type jwtService struct {
 	secret         string
 	accessTokenTTL time.Duration
-	logger         *shared.Log
+	logger         *logger.Log
 }
 
-func NewJwtService(secret string, accessTokenTTL time.Duration, logger *shared.Log) *jwtService {
+func NewJwtService(secret string, accessTokenTTL time.Duration, logger *logger.Log) *jwtService {
 	return &jwtService{
 		secret:         secret,
 		accessTokenTTL: accessTokenTTL,

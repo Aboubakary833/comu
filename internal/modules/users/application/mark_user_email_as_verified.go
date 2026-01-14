@@ -6,17 +6,17 @@ import (
 	"time"
 )
 
-type markUserEmailAsVerifiedUC struct {
+type MarkUserEmailAsVerifiedUC struct {
 	repo domain.Repository
 }
 
-func NewMarkUserEmailAsVerifiedUseCase(repo domain.Repository) *markUserEmailAsVerifiedUC {
-	return &markUserEmailAsVerifiedUC{
+func NewMarkUserEmailAsVerifiedUseCase(repo domain.Repository) *MarkUserEmailAsVerifiedUC {
+	return &MarkUserEmailAsVerifiedUC{
 		repo: repo,
 	}
 }
 
-func (useCase *markUserEmailAsVerifiedUC) Execute(ctx context.Context, userEmail string) error {
+func (useCase *MarkUserEmailAsVerifiedUC) Execute(ctx context.Context, userEmail string) error {
 	user, err := useCase.repo.FindByEmail(ctx, userEmail)
 
 	if err != nil {

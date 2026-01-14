@@ -14,17 +14,17 @@ type UpdatePostInput struct {
 	Content  string
 }
 
-type updatePostUC struct {
+type UpdatePostUC struct {
 	repo domain.PostRepository
 }
 
-func NewUpdatePostUseCase(repository domain.PostRepository) *updatePostUC {
-	return &updatePostUC{
+func NewUpdatePostUseCase(repository domain.PostRepository) *UpdatePostUC {
+	return &UpdatePostUC{
 		repo: repository,
 	}
 }
 
-func (useCase *updatePostUC) Execute(ctx context.Context, input UpdatePostInput) (slug string, err error) {
+func (useCase *UpdatePostUC) Execute(ctx context.Context, input UpdatePostInput) (slug string, err error) {
 	post, err := useCase.repo.FindByID(ctx, input.PostID)
 
 	if err != nil {

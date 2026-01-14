@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type createUserUC struct {
+type CreateUserUC struct {
 	repo domain.Repository
 }
 
@@ -15,13 +15,13 @@ type CreateUserInput struct {
 	Password string
 }
 
-func NewCreateUserUseCase(repo domain.Repository) *createUserUC {
-	return &createUserUC{
+func NewCreateUserUseCase(repo domain.Repository) *CreateUserUC {
+	return &CreateUserUC{
 		repo: repo,
 	}
 }
 
-func (useCase *createUserUC) Execute(ctx context.Context, input CreateUserInput) (*domain.User, error) {
+func (useCase *CreateUserUC) Execute(ctx context.Context, input CreateUserInput) (*domain.User, error) {
 	newUser := domain.NewUser(input.Name, input.Email, input.Password)
 	err := useCase.repo.Store(ctx, newUser)
 

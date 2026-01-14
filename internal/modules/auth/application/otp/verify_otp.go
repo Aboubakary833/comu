@@ -12,12 +12,12 @@ type VerifyOtpInput struct {
 	OtpCodeValue string
 }
 
-type verifyOtpUC struct {
+type VerifyOtpUC struct {
 	otpCodesRepository domain.OtpCodesRepository
 }
 
-func NewVerifyOtpUseCase(otpCodesRepository domain.OtpCodesRepository) *verifyOtpUC {
-	return &verifyOtpUC{
+func NewVerifyOtpUseCase(otpCodesRepository domain.OtpCodesRepository) *VerifyOtpUC {
+	return &VerifyOtpUC{
 		otpCodesRepository: otpCodesRepository,
 	}
 }
@@ -25,7 +25,7 @@ func NewVerifyOtpUseCase(otpCodesRepository domain.OtpCodesRepository) *verifyOt
 // Execute try to retrieve the otp code with the provided otpCodeValue, check if it match the provided
 // params and if it's not expired. If everything work fine, the otp code will be deleted from the data source
 // and nil will be returned as a success value.
-func (useCase *verifyOtpUC) Execute(ctx context.Context, input VerifyOtpInput) error {
+func (useCase *VerifyOtpUC) Execute(ctx context.Context, input VerifyOtpInput) error {
 	otpCode, err := useCase.otpCodesRepository.Find(ctx, input.OtpCodeValue)
 
 	if err != nil {

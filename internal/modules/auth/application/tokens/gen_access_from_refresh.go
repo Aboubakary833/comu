@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type genAccessTokenFromRefreshUC struct {
+type GenAccessTokenFromRefreshUC struct {
 	jwtService domain.JwtService
 	userService domain.UserService
 	refreshTokensRepository domain.RefreshTokensRepository
@@ -15,15 +15,15 @@ func NewGenAccessTokenFromRefreshUseCase(
 	jwtService domain.JwtService,
 	userService domain.UserService,
 	tokensRepository domain.RefreshTokensRepository,
-	) *genAccessTokenFromRefreshUC {
-	return &genAccessTokenFromRefreshUC{
+	) *GenAccessTokenFromRefreshUC {
+	return &GenAccessTokenFromRefreshUC{
 		jwtService: jwtService,
 		userService: userService,
 		refreshTokensRepository: tokensRepository,
 	}
 }
 
-func (useCase *genAccessTokenFromRefreshUC) Execute(ctx context.Context, tokenString string) (string, error) {
+func (useCase *GenAccessTokenFromRefreshUC) Execute(ctx context.Context, tokenString string) (string, error) {
 	token, err := useCase.refreshTokensRepository.Find(ctx, tokenString)
 
 	if err != nil {

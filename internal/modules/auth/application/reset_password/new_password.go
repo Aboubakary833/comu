@@ -1,4 +1,4 @@
-package newPassword
+package resetPassword
 
 import (
 	"comu/internal/modules/auth/domain"
@@ -6,20 +6,20 @@ import (
 	"errors"
 )
 
-type setNewPasswordUC struct {
+type SetNewPasswordUC struct {
 	userService domain.UserService
 	passwordService domain.PasswordService
 	notificationService domain.NotificationService
 	resetTokensRepository domain.ResetTokensRepository
 }
 
-func NewUseCase(
+func NewSetNewPasswordUseCase(
 	userService domain.UserService,
 	passwordService domain.PasswordService,
 	notificationService domain.NotificationService,
 	resetTokensRepository domain.ResetTokensRepository,
-) *setNewPasswordUC {
-	return &setNewPasswordUC{
+) *SetNewPasswordUC {
+	return &SetNewPasswordUC{
 		userService: userService,
 		passwordService: passwordService,
 		notificationService: notificationService,
@@ -28,7 +28,7 @@ func NewUseCase(
 }
 
 
-func (useCase *setNewPasswordUC) Execute(ctx context.Context, tokenString string, newPassword string) error {
+func (useCase *SetNewPasswordUC) Execute(ctx context.Context, tokenString string, newPassword string) error {
 	hashedNewPassword, err := useCase.passwordService.Hash(newPassword)
 	
 	if err != nil {

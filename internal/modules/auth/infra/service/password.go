@@ -2,16 +2,16 @@ package service
 
 import (
 	"comu/internal/modules/auth/domain"
-	"comu/internal/shared"
+	"comu/internal/shared/logger"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type passwordService struct {
-	logger *shared.Log
+	logger *logger.Log
 }
 
-func NewPasswordService(logger *shared.Log) *passwordService {
+func NewPasswordService(logger *logger.Log) *passwordService {
 	return &passwordService{
 		logger: logger,
 	}

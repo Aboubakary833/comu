@@ -1,11 +1,10 @@
 package auth
 
-import (
-	"net/http"
-)
+import "github.com/labstack/echo/v4"
 
 type PublicApi interface {
-	AuthMiddleware() http.Handler
+	AuthMiddleware() echo.HandlerFunc
+	GuestMiddleware() echo.HandlerFunc
 }
 
 type AuthModule struct {

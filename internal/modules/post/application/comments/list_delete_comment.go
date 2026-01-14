@@ -7,28 +7,28 @@ import (
 	"github.com/google/uuid"
 )
 
-type listCommentsUC struct {
+type ListCommentsUC struct {
 	repo domain.CommentRepository
 }
 
-type deleteCommentUC struct {
+type DeleteCommentUC struct {
 	repo domain.CommentRepository
 }
 
-func NewListCommentsUseCase(repository domain.CommentRepository) *listCommentsUC {
-	return &listCommentsUC{
+func NewListCommentsUseCase(repository domain.CommentRepository) *ListCommentsUC {
+	return &ListCommentsUC{
 		repo: repository,
 	}
 }
 
-func NewDeleteCommentUseCase(repository domain.CommentRepository) *deleteCommentUC {
-	return &deleteCommentUC{
+func NewDeleteCommentUseCase(repository domain.CommentRepository) *DeleteCommentUC {
+	return &DeleteCommentUC{
 		repo: repository,
 	}
 }
 
 
-func (useCase *listCommentsUC) Execute(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, *domain.Cursor, error) {
+func (useCase *ListCommentsUC) Execute(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, *domain.Cursor, error) {
 	if paginator.Limit <= 0 {
 		paginator.Limit = domain.DefaultPaginatorLimit
 	}
@@ -42,7 +42,7 @@ func (useCase *listCommentsUC) Execute(ctx context.Context, postID uuid.UUID, pa
 	return comments, cursor, nil
 }
 
-func (useCase *deleteCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID) error {
+func (useCase *DeleteCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID) error {
 	comment, err := useCase.repo.Find(ctx, commentID)
 
 	if err != nil {

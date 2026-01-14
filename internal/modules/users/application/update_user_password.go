@@ -7,17 +7,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type updateUserPasswordUC struct {
+type UpdateUserPasswordUC struct {
 	repo domain.Repository
 }
 
-func NewUpdateUserPasswordUseCase(repo domain.Repository) *updateUserPasswordUC {
-	return &updateUserPasswordUC{
+func NewUpdateUserPasswordUseCase(repo domain.Repository) *UpdateUserPasswordUC {
+	return &UpdateUserPasswordUC{
 		repo: repo,
 	}
 }
 
-func (useCase *updateUserPasswordUC) Execute(ctx context.Context, userID uuid.UUID, newPassword string) error {
+func (useCase *UpdateUserPasswordUC) Execute(ctx context.Context, userID uuid.UUID, newPassword string) error {
 	user, err := useCase.repo.FindByID(ctx, userID)
 
 	if err != nil {

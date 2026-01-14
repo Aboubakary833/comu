@@ -6,27 +6,27 @@ import (
 )
 
 
-type listPostsUC struct {
+type ListPostsUC struct {
 	repo domain.PostRepository
 }
 
-type readPostUC struct {
+type ReadPostUC struct {
 	repo domain.PostRepository
 }
 
-func NewListPostsUseCase(repository domain.PostRepository) *listPostsUC {
-	return &listPostsUC{
+func NewListPostsUseCase(repository domain.PostRepository) *ListPostsUC {
+	return &ListPostsUC{
 		repo: repository,
 	}
 }
 
-func NewReadPostUseCase(repository domain.PostRepository) *readPostUC {
-	return &readPostUC{
+func NewReadPostUseCase(repository domain.PostRepository) *ReadPostUC {
+	return &ReadPostUC{
 		repo: repository,
 	}
 }
 
-func (useCase *listPostsUC) Execute(ctx context.Context, paginator domain.Paginator) ([]domain.Post, *domain.Cursor, error) {
+func (useCase *ListPostsUC) Execute(ctx context.Context, paginator domain.Paginator) ([]domain.Post, *domain.Cursor, error) {
 	if paginator.Limit <= 0 {
 		paginator.Limit = domain.DefaultPaginatorLimit
 	}
@@ -40,7 +40,7 @@ func (useCase *listPostsUC) Execute(ctx context.Context, paginator domain.Pagina
 	return post, cursor, nil
 }
 
-func (useCase *readPostUC) Execute(ctx context.Context, slug string) (*domain.Post, error) {
+func (useCase *ReadPostUC) Execute(ctx context.Context, slug string) (*domain.Post, error) {
 	post, err := useCase.repo.FindBySlug(ctx, slug)
 
 	if err != nil {

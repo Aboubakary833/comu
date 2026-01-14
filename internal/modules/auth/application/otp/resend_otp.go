@@ -14,7 +14,7 @@ type ResendOtpInput struct {
 	OtpCodeType domain.OtpType
 }
 
-type resendOtpUC struct {
+type ResendOtpUC struct {
 	otpCodesRepository          domain.OtpCodesRepository
 	notificationService         domain.NotificationService
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
@@ -24,15 +24,15 @@ func NewResendOtpUseCase(
 	otpCodesRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
-) *resendOtpUC {
-	return &resendOtpUC{
+) *ResendOtpUC {
+	return &ResendOtpUC{
 		otpCodesRepository:          otpCodesRepository,
 		notificationService:         notificationService,
 		resendOtpRequestsRepository: resendOtpRequestsRepository,
 	}
 }
 
-func (useCase *resendOtpUC) Execute(ctx context.Context, input ResendOtpInput) error {
+func (useCase *ResendOtpUC) Execute(ctx context.Context, input ResendOtpInput) error {
 	req, err := useCase.resendOtpRequestsRepository.FindByID(ctx, input.ID)
 
 	if err != nil {

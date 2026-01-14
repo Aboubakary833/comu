@@ -3,7 +3,7 @@ package service
 import (
 	"comu/internal/modules/auth/domain"
 	"comu/internal/modules/users"
-	"comu/internal/shared"
+	"comu/internal/shared/logger"
 	"context"
 	"errors"
 
@@ -12,10 +12,10 @@ import (
 
 type userService struct {
 	api    users.PublicApi
-	logger *shared.Log
+	logger *logger.Log
 }
 
-func NewUserService(api users.PublicApi, logger *shared.Log) *userService {
+func NewUserService(api users.PublicApi, logger *logger.Log) *userService {
 	return &userService{
 		api:    api,
 		logger: logger,
@@ -62,7 +62,7 @@ func (service *userService) CreateUser(ctx context.Context, name, email, passwor
 			return uuid.UUID{}, domain.ErrInternal
 		}
 
-		return uuid.UUID{}, err
+		return uuid.UUID{}, domain.ErrUserEmailTaken
 	}
 
 	return response.ID, nil

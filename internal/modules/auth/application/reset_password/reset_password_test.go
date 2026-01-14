@@ -24,7 +24,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 
 		userService.On("GetUserByEmail", ctx, userEmail).Return(nil, domain.ErrUserNotFound).Once()
 
-		useCase := NewUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
+		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
 
 		err := useCase.Execute(ctx, userEmail)
 
@@ -57,7 +57,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
 		resendOtpRequestsRepository.On("CreateNew", ctx, userEmail).Return(nil).Once()
 
-		useCase := NewUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
+		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
 
 		err := useCase.Execute(ctx, userEmail)
 

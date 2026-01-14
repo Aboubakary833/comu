@@ -13,27 +13,27 @@ type CreateCommentInput struct {
 	Content  string
 }
 
-type createCommentUC struct {
+type CreateCommentUC struct {
 	repo domain.CommentRepository
 }
 
-type updateCommentUC struct {
+type UpdateCommentUC struct {
 	repo domain.CommentRepository
 }
 
-func NewCreateCommentUseCase(repository domain.CommentRepository) *createCommentUC {
-	return &createCommentUC{
+func NewCreateCommentUseCase(repository domain.CommentRepository) *CreateCommentUC {
+	return &CreateCommentUC{
 		repo: repository,
 	}
 }
 
-func NewUpdateCommentUseCase(repository domain.CommentRepository) *updateCommentUC {
-	return &updateCommentUC{
+func NewUpdateCommentUseCase(repository domain.CommentRepository) *UpdateCommentUC {
+	return &UpdateCommentUC{
 		repo: repository,
 	}
 }
 
-func (useCase *createCommentUC) Execute(ctx context.Context, input CreateCommentInput) (*domain.Comment, error) {
+func (useCase *CreateCommentUC) Execute(ctx context.Context, input CreateCommentInput) (*domain.Comment, error) {
 	comment := domain.NewComment(input.PostID, input.AuthorID, input.Content)
 
 	err := useCase.repo.Store(ctx, comment)
@@ -46,7 +46,7 @@ func (useCase *createCommentUC) Execute(ctx context.Context, input CreateComment
 }
 
 
-func (useCase *updateCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID, content string) error {
+func (useCase *UpdateCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID, content string) error {
 	comment, err := useCase.repo.Find(ctx, commentID)
 
 	if err != nil {

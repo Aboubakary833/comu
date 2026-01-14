@@ -13,27 +13,27 @@ type CreatePostInput struct {
 	Content string
 }
 
-type createPostUC struct {
+type CreatePostUC struct {
 	repo domain.PostRepository
 }
 
-type deletePostUC struct {
+type DeletePostUC struct {
 	repo domain.PostRepository
 }
 
-func NewCreatePostUseCase(repository domain.PostRepository) *createPostUC {
-	return &createPostUC{
+func NewCreatePostUseCase(repository domain.PostRepository) *CreatePostUC {
+	return &CreatePostUC{
 		repo: repository,
 	}
 }
 
-func NewDeletePostUseCase(repository domain.PostRepository) *deletePostUC {
-	return &deletePostUC{
+func NewDeletePostUseCase(repository domain.PostRepository) *DeletePostUC {
+	return &DeletePostUC{
 		repo: repository,
 	}
 }
 
-func (useCase *createPostUC) Execute(ctx context.Context, input CreatePostInput) (*domain.Post, error) {
+func (useCase *CreatePostUC) Execute(ctx context.Context, input CreatePostInput) (*domain.Post, error) {
 	post := domain.NewPost(input.UserID, input.Title, input.Content)
 
 	err := useCase.repo.Store(ctx, post)
@@ -45,7 +45,7 @@ func (useCase *createPostUC) Execute(ctx context.Context, input CreatePostInput)
 	return post, nil
 }
 
-func (useCase *deletePostUC) Execute(ctx context.Context, postID, authorID uuid.UUID) error {
+func (useCase *DeletePostUC) Execute(ctx context.Context, postID, authorID uuid.UUID) error {
 	post, err := useCase.repo.FindByID(ctx, postID)
 
 	if err != nil {

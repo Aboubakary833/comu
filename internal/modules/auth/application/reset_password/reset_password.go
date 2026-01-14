@@ -5,20 +5,20 @@ import (
 	"context"
 )
 
-type resetPasswordUC struct {
+type ResetPasswordUC struct {
 	userService         domain.UserService
 	otpCodesRepository  domain.OtpCodesRepository
 	notificationService domain.NotificationService
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
 }
 
-func NewUseCase(
+func NewResetPasswordUseCase(
 	userService domain.UserService,
 	otpCodesRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
-) *resetPasswordUC {
-	return &resetPasswordUC{
+) *ResetPasswordUC {
+	return &ResetPasswordUC{
 		userService:         userService,
 		otpCodesRepository:  otpCodesRepository,
 		notificationService: notificationService,
@@ -26,7 +26,7 @@ func NewUseCase(
 	}
 }
 
-func (useCase *resetPasswordUC) Execute(ctx context.Context, userEmail string) error {
+func (useCase *ResetPasswordUC) Execute(ctx context.Context, userEmail string) error {
 
 	_, err := useCase.userService.GetUserByEmail(ctx, userEmail)
 	if err != nil {

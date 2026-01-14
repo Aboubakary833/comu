@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type updateUserInfoUC struct {
+type UpdateUserInfoUC struct {
 	repo domain.Repository
 }
 
@@ -18,13 +18,13 @@ type UpdateUserInfoInput struct {
 	NewAvatar string
 }
 
-func NewUpdateUserInfoUseCase(repo domain.Repository) *updateUserInfoUC {
-	return &updateUserInfoUC{
+func NewUpdateUserInfoUseCase(repo domain.Repository) *UpdateUserInfoUC {
+	return &UpdateUserInfoUC{
 		repo: repo,
 	}
 }
 
-func (useCase *updateUserInfoUC) Execute(ctx context.Context, input UpdateUserInfoInput) error {
+func (useCase *UpdateUserInfoUC) Execute(ctx context.Context, input UpdateUserInfoInput) error {
 	user, err := useCase.repo.FindByID(ctx, input.ID)
 
 	if err != nil {

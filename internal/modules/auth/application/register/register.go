@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type registerUC struct {
+type RegisterUC struct {
 	userService         domain.UserService
 	passwordService     domain.PasswordService
 	otpCodeRepository   domain.OtpCodesRepository
@@ -20,8 +20,8 @@ func NewUseCase(
 	notificationService domain.NotificationService,
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
 	
-) *registerUC {
-	return &registerUC{
+) *RegisterUC {
+	return &RegisterUC{
 		userService:         userService,
 		passwordService:     passwordService,
 		otpCodeRepository:   otpCodeRepository,
@@ -30,7 +30,7 @@ func NewUseCase(
 	}
 }
 
-func (useCase *registerUC) Execute(ctx context.Context, name, email, password string) error {
+func (useCase *RegisterUC) Execute(ctx context.Context, name, email, password string) error {
 	hashedPassword, err := useCase.passwordService.Hash(password)
 
 	if err != nil {

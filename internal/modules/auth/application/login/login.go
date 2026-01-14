@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-type loginUC struct {
+type LoginUC struct {
 	userService         domain.UserService
 	otpCodeRepository   domain.OtpCodesRepository
 	notificationService domain.NotificationService
@@ -20,8 +20,8 @@ func NewUseCase(
 	otpCodeRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
-) *loginUC {
-	return &loginUC{
+) *LoginUC {
+	return &LoginUC{
 		userService:         userService,
 		passwordService:    passwordService,
 		otpCodeRepository:   otpCodeRepository,
@@ -30,7 +30,7 @@ func NewUseCase(
 	}
 }
 
-func (useCase *loginUC) Execute(ctx context.Context, email, password string) error {
+func (useCase *LoginUC) Execute(ctx context.Context, email, password string) error {
 	user, err := useCase.userService.GetUserByEmail(ctx, email)
 
 	if err != nil {
