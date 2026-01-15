@@ -3,71 +3,85 @@ package validation
 import (
 	"comu/internal/modules/auth/domain"
 	"comu/internal/shared/utils"
+	"comu/internal/shared/validator"
 	"regexp"
 
 	"github.com/Oudwins/zog"
+	"github.com/Oudwins/zog/internals"
 )
 
 var (
-	msgNameRequired 		 		= "Name is required"
-	mgsEmailRequired 		 		= "Email address is required"
-	mgsPasswordRequired 	 		= "Password is required"
-	msgInvalidEmail			 		= "Provided email is invalid"
-	msgNameTooBig			 		= "Name must not be more than 50 characters long"
-	msgNameTooShort			 		= "Name must be at least 3 characters long"
-	msgPasswordMustHaveDigit 		= "Password must contain at least one digit"
-	msgPasswordMustHaveUpperCase 	= "Password must contain at least one uppercase letter"
-	msgPasswordMustHaveSpecialChar  = "Password must contain at least one special character"
-	mgsInvalidOtp 			 		= utils.UcFirst(domain.ErrInvalidOtp.Error())
+	msgNameRequired                = "Name is required"
+	msgEmailRequired               = "Email address is required"
+	msgPasswordRequired            = "Password is required"
+	msgPasswordShouldBeConfirmed   = "Password should be confirmed"
+	msgPasswordsDoNotMatch         = "Password and password confirmation don't match"
+	msgTokenRequired               = "Token is required"
+	msgInvalidEmail                = "Provided email is invalid"
+	msgNameTooBig                  = "Name must not be more than 50 characters long"
+	msgNameTooShort                = "Name must be at least 3 characters long"
+	msgPasswordMustHaveDigit       = "Password must contain at least one digit"
+	msgPasswordMustHaveUpperCase   = "Password must contain at least one uppercase letter"
+	msgPasswordMustHaveSpecialChar = "Password must contain at least one special character"
+	msgInvalidOtp                  = utils.UcFirst(domain.ErrInvalidOtp.Error())
 )
 
-
-type StructValidator struct {
-	shape *zog.StructSchema
-}
-
-type SchemaValidationErrors map[string]string
-
-func NewStructValidator(shape *zog.StructSchema) *StructValidator {
-	return &StructValidator{
-		shape: shape,
+var confirmed = zog.CustomFunc(func(ptr *string, ctx zog.Ctx) bool {
+	password, ok := ctx.Get("password").(string)
+	if !ok {
+		return false
 	}
-}
 
-func (validator *StructValidator) Validate(data, destPtr any, opt ...zog.ExecOption) SchemaValidationErrors {
-	errList := validator.shape.Parse(data, destPtr, opt...)
-	
-	if errList != nil {
-		var errors = make(SchemaValidationErrors)
+	return *ptr == password
+})
 
-		for _, err := range errList {
-			errors[err.PathString()] = err.Message
+var LoginValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"email":    zog.String().Required(zog.Message(msgEmailRequired)),
+	"password": zog.String().Required(zog.Message(msgPasswordRequired)),
+}))
+
+var RefreshValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"refresh_token": zog.String().Required(zog.Message(msgTokenRequired))
+}))
+
+var RegisterValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"name": zog.String().Required(zog.Message(msgNameRequired)).
+		Min(3, zog.Message(msgNameTooShort)).Max(50, zog.Message(msgNameTooBig)),
+	"email": zog.String().Required(zog.Message(msgEmailRequired)).Email(zog.Message(msgInvalidEmail)),
+	"password": zog.String().Required(zog.Message(msgPasswordRequired)).
+		ContainsDigit(zog.Message(msgPasswordMustHaveDigit)).
+		ContainsUpper(zog.Message(msgPasswordMustHaveUpperCase)).
+		ContainsSpecial(zog.Message(msgPasswordMustHaveSpecialChar)),
+}))
+
+var NewPasswordValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"reset_token": zog.String().Required(zog.Message(msgTokenRequired)),
+	"password":    zog.String().Required(zog.Message(msgPasswordRequired)),
+	"password_confirmation": zog.String().Required(zog.Message(msgPasswordShouldBeConfirmed)).TestFunc(func(val *string, ctx internals.Ctx) bool {
+		password, ok := ctx.Get("password").(string)
+		if !ok || *val == password {
+			ctx.AddIssue(&zog.ZogIssue{
+				Message: "Password and password confirmation don't match",
+				Path:    []string{"password_confirmation"},
+				Value:   val,
+			})
 		}
 
-		return errors
-	}
-
-	return nil
-}
-
-var LoginValidator = NewStructValidator(zog.Struct(zog.Shape{
-	"email": zog.String().Required(zog.Message(mgsEmailRequired)),
-	"password": zog.String().Required(zog.Message(mgsPasswordRequired)),
+		return false
+	}),
 }))
 
-var RegisterValidator = NewStructValidator(zog.Struct(zog.Shape{
-	"name": zog.String().Required(zog.Message(msgNameRequired)).
-	Min(3, zog.Message(msgNameTooShort)).Max(50, zog.Message(msgNameTooBig)),
-	"email": zog.String().Required(zog.Message(mgsEmailRequired)).Email(zog.Message(msgInvalidEmail)),
-	"password": zog.String().Required(zog.Message(mgsPasswordRequired)).
-	ContainsDigit(zog.Message(msgPasswordMustHaveDigit)).
-	ContainsUpper(zog.Message(msgPasswordMustHaveUpperCase)).
-	ContainsSpecial(zog.Message(msgPasswordMustHaveSpecialChar)),
+var ResetPasswordValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"email": zog.String().Required(zog.Message(msgEmailRequired)).Email(zog.Message(msgInvalidEmail)),
 }))
 
-var OtpCodeValidator = NewStructValidator(zog.Struct(zog.Shape{
-	"email": zog.String().Required(zog.Message(mgsEmailRequired)),
-	"code": zog.String().Len(6, zog.Message(mgsInvalidOtp)).
-	Match(regexp.MustCompile("[0-9]"), zog.Message(mgsInvalidOtp)),
+var OtpCodeValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"email": zog.String().Required(zog.Message(msgEmailRequired)),
+	"code": zog.String().Len(6, zog.Message(msgInvalidOtp)).
+		Match(regexp.MustCompile("[0-9]"), zog.Message(msgInvalidOtp)),
 }))
 
+var ResendOtpValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"email":        zog.String().Required(zog.Message(msgEmailRequired)),
+	"resend_token": zog.String().Required(zog.Message(msgTokenRequired)),
+}))

@@ -42,6 +42,12 @@ func (useCase *SetNewPasswordUC) Execute(ctx context.Context, tokenString string
 		}
 		return err
 	}
+
+	if token.Expired() {
+		useCase.resetTokensRepository.Delete(ctx, tokenString)
+		return domain.ErrExpiredToken
+	}
+
 	err = useCase.userService.UpdateUserPassword(ctx, token.UserID, hashedNewPassword)
 
 	if err != nil {

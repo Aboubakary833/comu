@@ -37,7 +37,7 @@ var (
 	ErrUserEmailTaken               = errors.New("the provided email is already taken")
 	ErrInvalidCredentials           = errors.New("invalid credentials. Please try with another credentials")
 	ErrResendRequestNotFound        = errors.New("no resend otp request found")
-	ErrInvalidResendRequest         = errors.New("the provided opt resend request is invalid")
+	ErrInvalidResendRequest         = errors.New("the provided opt resend request data is invalid")
 	ErrResendRequestCountExceeded   = errors.New("you exceeded the authorized otp resend request limit")
 	ErrResendRequestCantBeProcessed = errors.New("you can't request an otp code resend at the moment")
 	ErrInternal                     = errors.New("internal error. Please retry or contact our support team")

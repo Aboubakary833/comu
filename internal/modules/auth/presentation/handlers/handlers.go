@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"comu/internal/modules/auth/domain"
-	"comu/internal/modules/auth/presentation/validation"
 	"comu/internal/shared/utils"
+	"comu/internal/shared/validator"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +14,7 @@ type errorResponse struct {
 	Code    int    `json:"code"`
 	Status  string `json:"status"`
 	Message string `json:"message"`
-	Errors	validation.SchemaValidationErrors `json:"errors,omitempty"`
+	Errors	validator.SchemaValidationErrors `json:"errors,omitempty"`
 }
 
 type successResponse[T any] struct {
@@ -47,7 +47,7 @@ func jsonErrorMessageResponse(ctx echo.Context, statusCode int, message string) 
 	)
 }
 
-func jsonValidationErrorResponse(ctx echo.Context, errList validation.SchemaValidationErrors) error {
+func jsonValidationErrorResponse(ctx echo.Context, errList validator.SchemaValidationErrors) error {
 	return ctx.JSON(
 		http.StatusUnprocessableEntity,
 		errorResponse{
