@@ -12,18 +12,18 @@ import (
 )
 
 type ResetPasswordHandlers struct {
-	newPasswordUC   resetPassword.SetNewPasswordUC
-	genResetTokenUC tokens.GenerateResetTokenUC
-	resetPasswordUC resetPassword.ResetPasswordUC
+	newPasswordUC   *resetPassword.SetNewPasswordUC
+	genResetTokenUC *tokens.GenerateResetTokenUC
+	resetPasswordUC *resetPassword.ResetPasswordUC
 
 	otpHandlers *OtpHandlers
 	logger      *logger.Log
 }
 
 func NewResetPasswordHandlers(
-	newPasswordUC resetPassword.SetNewPasswordUC,
-	genResetTokenUC tokens.GenerateResetTokenUC,
-	resetPasswordUC resetPassword.ResetPasswordUC,
+	newPasswordUC *resetPassword.SetNewPasswordUC,
+	genResetTokenUC *tokens.GenerateResetTokenUC,
+	resetPasswordUC *resetPassword.ResetPasswordUC,
 
 	otpHandlers *OtpHandlers,
 	logger *logger.Log,
@@ -48,7 +48,7 @@ type newPasswordFormData struct {
 	PasswordConfirmation string `json:"password_confirmation"`
 }
 
-func (h *ResetPasswordHandlers) Reset(ctx echo.Context) error {
+func (h *ResetPasswordHandlers) reset(ctx echo.Context) error {
 	var data, validated resetPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
@@ -74,8 +74,8 @@ func (h *ResetPasswordHandlers) Reset(ctx echo.Context) error {
 	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *ResetPasswordHandlers) VerifyOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
+func (h *ResetPasswordHandlers) verifyOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 		token, err := h.genResetTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
@@ -97,12 +97,12 @@ func (h *ResetPasswordHandlers) VerifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *ResetPasswordHandlers) ResendOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Resend(domain.ResetPasswordOTP)
+func (h *ResetPasswordHandlers) resendOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.resend(domain.ResetPasswordOTP)
 	return handler(ctx)
 }
 
-func (h *ResetPasswordHandlers) NewPassword(ctx echo.Context) error {
+func (h *ResetPasswordHandlers) newPassword(ctx echo.Context) error {
 	var data, validated newPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
@@ -135,4 +135,13 @@ func (h *ResetPasswordHandlers) NewPassword(ctx echo.Context) error {
 	}
 
 	return jsonSuccessMessageResponse(ctx, "Your password has been successfully updated.")
+}
+
+func (h *ResetPasswordHandlers) RegisterRoutes(echo *echo.Echo) {
+	groupRouter := echo.Group("/reset_password")
+
+	groupRouter.POST("/", h.reset)
+	groupRouter.POST("/verify", h.verifyOtp)
+	groupRouter.POST("/resend_otp", h.resendOtp)
+	groupRouter.POST("/new_password", h.newPassword)
 }

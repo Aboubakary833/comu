@@ -16,18 +16,18 @@ var (
 )
 
 type RegisterHandlers struct {
-	registerUC           register.RegisterUC
-	genAuthTokenUC       tokens.GenerateAuthTokensUC
-	markUserAsVerifiedUC register.MarkUserAsVerifiedUC
+	registerUC           *register.RegisterUC
+	genAuthTokenUC       *tokens.GenerateAuthTokensUC
+	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC
 
 	otpHandlers *OtpHandlers
 	logger      *logger.Log
 }
 
 func NewRegisterHandlers(
-	registerUC register.RegisterUC,
-	genAuthTokenUC tokens.GenerateAuthTokensUC,
-	markUserAsVerifiedUC register.MarkUserAsVerifiedUC,
+	registerUC *register.RegisterUC,
+	genAuthTokenUC *tokens.GenerateAuthTokensUC,
+	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC,
 
 	otpHandler *OtpHandlers,
 	logger *logger.Log,
@@ -48,7 +48,7 @@ type registerFormData struct {
 	Password string `json:"password"`
 }
 
-func (h *RegisterHandlers) Register(ctx echo.Context) error {
+func (h *RegisterHandlers) register(ctx echo.Context) error {
 	var data, validated registerFormData
 
 	if err := ctx.Bind(&data); err != nil {
@@ -76,8 +76,8 @@ func (h *RegisterHandlers) Register(ctx echo.Context) error {
 	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *RegisterHandlers) VerifyOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
+func (h *RegisterHandlers) verifyOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 
 		if err := h.markUserAsVerifiedUC.Execute(ctx.Request().Context(), validated.Email); err != nil {
 			if errors.Is(err, domain.ErrUserEmailTaken) {
@@ -108,7 +108,15 @@ func (h *RegisterHandlers) VerifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *RegisterHandlers) ResendOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Resend(domain.RegisterOTP)
+func (h *RegisterHandlers) resendOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.resend(domain.RegisterOTP)
 	return handler(ctx)
+}
+
+func (h *RegisterHandlers) RegisterRoutes(echo *echo.Echo) {
+	groupRouter := echo.Group("/register")
+
+	groupRouter.POST("/", h.register)
+	groupRouter.POST("/verify", h.verifyOtp)
+	groupRouter.POST("/resend_otp", h.resendOtp)
 }

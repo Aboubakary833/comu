@@ -68,5 +68,6 @@ func (useCase *ResendOtpUC) Execute(ctx context.Context, input ResendOtpInput) e
 		return err
 	}
 
+	useCase.resendOtpRequestsRepository.IncrementCount(ctx, req)
 	return useCase.notificationService.SendOtpCodeMessage(otpCode)
 }

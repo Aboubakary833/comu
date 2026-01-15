@@ -2,6 +2,8 @@ package main
 
 import (
 	"comu/config"
+	"comu/internal/modules/auth"
+	"comu/internal/modules/users"
 	"comu/internal/shared/logger"
 	"database/sql"
 
@@ -27,6 +29,8 @@ func main() {
 	defer db.Close()
 
 	// Initialize modules and inject db and logging dependencies
+	usersModule := users.NewModule(db)
+	authModule := auth.NewModule(db, config, usersModule.GetPublicApi(), logger)
 
 	e := echo.New()
 	e.Use(
@@ -37,6 +41,8 @@ func main() {
 	)
 
 	// Register modules routes
+	authModule.RegisterRoutes(e)
+	
 
 	e.Logger.Fatal(e.Start(config.AppAddr))
 }

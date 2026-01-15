@@ -16,6 +16,7 @@ type Config struct {
 	DBSource     string `mapstructure:"DB_SOURCE"`
 	MailHost     string `mapstructure:"MAIL_HOST"`
 	MailPort     int    `mapstructure:"MAIL_PORT"`
+	MailFrom     string `mapstructure:"MAIL_FROM"`
 	MailUserName string `mapstructure:"MAIL_USERNAME"`
 	MailPassword string `mapstructure:"MAIL_PASSWORD"`
 }
@@ -58,6 +59,7 @@ func setEnvDefaultVariables() {
 	viper.SetDefault("DB_SOURCE", "abubakr:root@/comu_db?parseTime=true")
 	viper.SetDefault("MAIL_HOST", "smtp.zoho.com")
 	viper.SetDefault("MAIL_PORT", "465")
+	viper.SetDefault("MAIL_FROM", "")
 	viper.SetDefault("MAIL_USERNAME", "")
 	viper.SetDefault("MAIL_PASSWORD", "")
 }

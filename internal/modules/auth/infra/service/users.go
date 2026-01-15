@@ -48,7 +48,7 @@ func (service *userService) GetUserByEmail(ctx context.Context, email string) (*
 	})
 }
 
-func (service *userService) CreateUser(ctx context.Context, name, email, password string) (uuid.UUID, error) {
+func (service *userService) CreateNewUser(ctx context.Context, name, email, password string) (uuid.UUID, error) {
 
 	response, err := service.api.CreateUser(ctx, users.CreateUserRequest{
 		Name:     name,
@@ -68,7 +68,7 @@ func (service *userService) CreateUser(ctx context.Context, name, email, passwor
 	return response.ID, nil
 }
 
-func (service *userService) MarkUserAsVerified(ctx context.Context, userEmail string) error {
+func (service *userService) MarkUserEmailAsVerified(ctx context.Context, userEmail string) error {
 	err := service.api.MarkEmailAsVerified(ctx, userEmail)
 
 	if err != nil {

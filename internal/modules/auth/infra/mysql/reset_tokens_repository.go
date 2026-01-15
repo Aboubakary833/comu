@@ -50,9 +50,9 @@ func (repo *resetTokensRepository) Store(ctx context.Context, token *domain.Rese
 	return err
 }
 
-func (repo *resetTokensRepository) Delete(ctx context.Context, token *domain.ResetToken) error {
+func (repo *resetTokensRepository) Delete(ctx context.Context, tokenString string) error {
 	query := "DELETE FROM reset_tokens WHERE token = ?"
-	_, err := repo.db.ExecContext(ctx, query, token.Token)
+	_, err := repo.db.ExecContext(ctx, query, tokenString)
 
 	return err
 }

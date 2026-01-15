@@ -20,18 +20,18 @@ var (
 )
 
 type LoginHandlers struct {
-	loginUC                     login.LoginUC
-	genAuthTokenUC              tokens.GenerateAuthTokensUC
-	genAccessTokenFromRefreshUC tokens.GenAccessTokenFromRefreshUC
+	loginUC                     *login.LoginUC
+	genAuthTokenUC              *tokens.GenerateAuthTokensUC
+	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC
 
 	otpHandlers *OtpHandlers
 	logger      *logger.Log
 }
 
 func NewLoginHandlers(
-	loginUC login.LoginUC,
-	genAuthTokenUC tokens.GenerateAuthTokensUC,
-	genAccessTokenFromRefreshUC tokens.GenAccessTokenFromRefreshUC,
+	loginUC *login.LoginUC,
+	genAuthTokenUC *tokens.GenerateAuthTokensUC,
+	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC,
 
 	otpHandler *OtpHandlers,
 	logger *logger.Log,
@@ -55,7 +55,7 @@ type refreshFormData struct {
 	Token string `json:"refresh_token"`
 }
 
-func (h *LoginHandlers) Login(ctx echo.Context) error {
+func (h *LoginHandlers) loginAttempt(ctx echo.Context) error {
 	var data, validated loginFormData
 
 	if err := ctx.Bind(&data); err != nil {
@@ -84,8 +84,8 @@ func (h *LoginHandlers) Login(ctx echo.Context) error {
 	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *LoginHandlers) VerifyOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
+func (h *LoginHandlers) verifyOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 		access, refresh, err := h.genAuthTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
@@ -106,12 +106,12 @@ func (h *LoginHandlers) VerifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *LoginHandlers) ResendOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.Resend(domain.LoginOTP)
+func (h *LoginHandlers) resendOtp(ctx echo.Context) error {
+	handler := h.otpHandlers.resend(domain.LoginOTP)
 	return handler(ctx)
 }
 
-func (h *LoginHandlers) Refresh(ctx echo.Context) error {
+func (h *LoginHandlers) refreshToken(ctx echo.Context) error {
 	var data refreshFormData
 
 	if err := ctx.Bind(&data); err != nil {
@@ -147,4 +147,13 @@ func (h *LoginHandlers) Refresh(ctx echo.Context) error {
 	return jsonSuccessWithDataResponse(ctx, map[string]string{
 		"access_token": token,
 	})
+}
+
+func (h *LoginHandlers) RegisterRoutes(echo *echo.Echo) {
+	groupRouter := echo.Group("/login")
+
+	groupRouter.POST("/", h.loginAttempt)
+	groupRouter.POST("/verify", h.verifyOtp)
+	groupRouter.POST("/resend_otp", h.resendOtp)
+	groupRouter.POST("/refresh", h.refreshToken)
 }

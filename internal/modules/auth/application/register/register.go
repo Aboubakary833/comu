@@ -13,7 +13,7 @@ type RegisterUC struct {
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
 }
 
-func NewUseCase(
+func NewRegisterUseCase(
 	userService domain.UserService,
 	passwordService domain.PasswordService,
 	otpCodeRepository domain.OtpCodesRepository,

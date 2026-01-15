@@ -20,15 +20,15 @@ var (
 )
 
 type OtpHandlers struct {
-	verifyOtpUC otp.VerifyOtpUC
-	resendOtpUC otp.ResendOtpUC
+	verifyOtpUC *otp.VerifyOtpUC
+	resendOtpUC *otp.ResendOtpUC
 
 	logger *logger.Log
 }
 
 func NewOtpHandlers(
-	verifyOtpUC otp.VerifyOtpUC,
-	resendOtpUC otp.ResendOtpUC,
+	verifyOtpUC *otp.VerifyOtpUC,
+	resendOtpUC *otp.ResendOtpUC,
 	logger *logger.Log,
 ) *OtpHandlers {
 	return &OtpHandlers{
@@ -49,7 +49,7 @@ type resendOtpFormData struct {
 	ResendToken string `json:"resend_token"`
 }
 
-func (h *OtpHandlers) Verify(otpType domain.OtpType, afterFunc func(verifyOtpFormData) error) echo.HandlerFunc {
+func (h *OtpHandlers) verify(otpType domain.OtpType, afterFunc func(verifyOtpFormData) error) echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
 		var data, validated verifyOtpFormData
@@ -86,7 +86,7 @@ func (h *OtpHandlers) Verify(otpType domain.OtpType, afterFunc func(verifyOtpFor
 
 }
 
-func (h *OtpHandlers) Resend(otpType domain.OtpType) echo.HandlerFunc {
+func (h *OtpHandlers) resend(otpType domain.OtpType) echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
 		var data, validated resendOtpFormData

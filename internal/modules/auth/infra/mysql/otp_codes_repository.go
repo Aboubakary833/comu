@@ -76,9 +76,9 @@ func (repo *otpCodesRepository) CreateWithUserEmail(ctx context.Context, otpType
 	return otpCode, nil
 }
 
-func (repo *otpCodesRepository) Delete(ctx context.Context, value string) error {
+func (repo *otpCodesRepository) Delete(ctx context.Context, otpCode *domain.OtpCode) error {
 	query := "DELETE FROM otp_codes WHERE value = ?"
-	_, err := repo.db.ExecContext(ctx, query, value)
+	_, err := repo.db.ExecContext(ctx, query, otpCode.Value)
 
 	return err
 }

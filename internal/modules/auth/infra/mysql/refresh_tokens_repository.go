@@ -58,9 +58,9 @@ func (repo *refreshTokensRepository) Update(ctx context.Context, token *domain.R
 	return err
 }
 
-func (repo *refreshTokensRepository) Revoke(ctx context.Context, token *domain.RefreshToken) error {
+func (repo *refreshTokensRepository) Revoke(ctx context.Context, tokenString string) error {
 	query := "UPDATE refresh_tokens SET revoked = ? WHERE token = ?"
-	_, err := repo.db.ExecContext(ctx, query, token.Revoked, token.Token)
+	_, err := repo.db.ExecContext(ctx, query, true, tokenString)
 
 	return err
 }

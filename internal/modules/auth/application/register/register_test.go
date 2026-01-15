@@ -35,7 +35,7 @@ func TestRegister(t *testing.T) {
 		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
 		resendOtpRequestsRepository.On("CreateNew", ctx, userEmail).Return(nil).Once()
 
-		useCase := NewUseCase(
+		useCase := NewRegisterUseCase(
 			userService,
 			passwordService,
 			otpCodesRepository,
@@ -69,7 +69,7 @@ func TestRegister(t *testing.T) {
 		passwordService.On("Hash", userPassword).Return(hashedPassword, nil).Once()
 		userService.On("CreateNewUser", ctx, userName, userEmail, hashedPassword).Return(nil, users.ErrUserEmailTaken).Once()
 
-		useCase := NewUseCase(
+		useCase := NewRegisterUseCase(
 			userService,
 			passwordService,
 			otpCodesRepository,

@@ -79,3 +79,12 @@ func (repo *resendOtpRequestsRepository) Delete(ctx context.Context, req *domain
 
 	return err
 }
+
+func (repo *resendOtpRequestsRepository) IncrementCount(ctx context.Context, req *domain.ResendOtpRequest) error {
+	query := "UPDATE resend_otp_requests SET count = ? WHERE id = UUID_TO_BIN(?)"
+	req.Count += 1
+
+	_, err := repo.db.ExecContext(ctx, query, req.Count, req.ID.String())
+
+	return err
+}
