@@ -22,7 +22,7 @@ func TestListCommentUseCase(t *testing.T) {
 
 		useCase := NewListCommentsUseCase(repo)
 
-		comments, cursor, err := useCase.Execute(context.Background(), postID, domain.Paginator{ Limit: -3 })
+		comments, cursor, err := useCase.Execute(context.Background(), postID, domain.Paginator{Limit: -3})
 
 		if _assert.NoError(err) {
 			_assert.Equal(10, len(comments))
@@ -59,10 +59,10 @@ func TestListCommentUseCase(t *testing.T) {
 
 		useCase := NewListCommentsUseCase(repo)
 
-		comments, nextCursor, err := useCase.Execute(ctx, postID,domain.Paginator{
+		comments, nextCursor, err := useCase.Execute(ctx, postID, domain.Paginator{
 			Limit: 8,
 			After: &domain.Cursor{
-				ID: comment.ID,
+				ID:        comment.ID,
 				CreatedAt: comment.CreatedAt,
 			},
 		})

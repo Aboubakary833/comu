@@ -6,9 +6,9 @@ import (
 )
 
 type ResetPasswordUC struct {
-	userService         domain.UserService
-	otpCodesRepository  domain.OtpCodesRepository
-	notificationService domain.NotificationService
+	userService                 domain.UserService
+	otpCodesRepository          domain.OtpCodesRepository
+	notificationService         domain.NotificationService
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
 }
 
@@ -19,9 +19,9 @@ func NewResetPasswordUseCase(
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
 ) *ResetPasswordUC {
 	return &ResetPasswordUC{
-		userService:         userService,
-		otpCodesRepository:  otpCodesRepository,
-		notificationService: notificationService,
+		userService:                 userService,
+		otpCodesRepository:          otpCodesRepository,
+		notificationService:         notificationService,
 		resendOtpRequestsRepository: resendOtpRequestsRepository,
 	}
 }
@@ -39,7 +39,7 @@ func (useCase *ResetPasswordUC) Execute(ctx context.Context, userEmail string) e
 		return err
 	}
 	err = useCase.resendOtpRequestsRepository.CreateNew(ctx, userEmail)
-	
+
 	if err != nil {
 		return err
 	}

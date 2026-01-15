@@ -11,6 +11,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var (
+	invalidOtp                 errorType = "invalid_otp"
+	expiredOtp                 errorType = "expired_otp"
+	invalidResendRequest       errorType = "invalid_request"
+	unprocessableResendRequest errorType = "unprocessable_resend_request"
+	exceededResendRequestCount errorType = "exceeded_resend_request_count"
+)
+
 type OtpHandlers struct {
 	verifyOtpUC otp.VerifyOtpUC
 	resendOtpUC otp.ResendOtpUC
@@ -63,8 +71,10 @@ func (h *OtpHandlers) Verify(otpType domain.OtpType, afterFunc func(verifyOtpFor
 		); err != nil {
 
 			switch {
-			case errors.Is(err, domain.ErrInvalidOtp) || errors.Is(err, domain.ErrExpiredOtp):
-				return jsonUnauthorizedResponse(ctx, err.Error())
+			case errors.Is(err, domain.ErrInvalidOtp):
+				return jsonUnauthorizedResponse(ctx, invalidOtp, err.Error())
+			case errors.Is(err, domain.ErrExpiredOtp):
+				return jsonUnauthorizedResponse(ctx, expiredOtp, err.Error())
 			default:
 				h.logger.Error.Println(err)
 				return jsonInternalErrorResponse(ctx)
@@ -92,7 +102,10 @@ func (h *OtpHandlers) Resend(otpType domain.OtpType) echo.HandlerFunc {
 		id, err := uuid.Parse(validated.ResendToken)
 
 		if err != nil {
-			return jsonUnauthorizedResponse(ctx, domain.ErrInvalidResendRequest.Error())
+			return jsonUnauthorizedResponse(
+				ctx, invalidResendRequest,
+				domain.ErrInvalidResendRequest.Error(),
+			)
 		}
 
 		if err := h.resendOtpUC.Execute(
@@ -103,16 +116,23 @@ func (h *OtpHandlers) Resend(otpType domain.OtpType) echo.HandlerFunc {
 			},
 		); err != nil {
 
-			if errors.Is(err, domain.ErrInvalidResendRequest) ||
-				errors.Is(err, domain.ErrResendRequestCountExceeded) ||
-				errors.Is(err, domain.ErrResendRequestCantBeProcessed) {
-					return jsonUnauthorizedResponse(ctx, err.Error())
+			switch {
+			case errors.Is(err, domain.ErrInvalidResendRequest):
+				return jsonUnauthorizedResponse(ctx, invalidResendRequest, err.Error())
+
+			case errors.Is(err, domain.ErrResendRequestCountExceeded):
+				return jsonUnauthorizedResponse(ctx, exceededResendRequestCount, err.Error())
+
+			case errors.Is(err, domain.ErrResendRequestCantBeProcessed):
+				return jsonUnauthorizedResponse(ctx, unprocessableResendRequest, err.Error())
+
+			default:
+				h.logger.Error.Println(err)
+				return jsonInternalErrorResponse(ctx)
 			}
 
-			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
 		}
 
-		return nil
+		return jsonSuccessMessageResponse(ctx, "A new otp code has been sent to your mail.")
 	}
 }

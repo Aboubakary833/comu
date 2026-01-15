@@ -80,7 +80,7 @@ func (h *ResetPasswordHandlers) VerifyOtp(ctx echo.Context) error {
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, domain.ErrInvalidOtp.Error())
+				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
@@ -120,11 +120,13 @@ func (h *ResetPasswordHandlers) NewPassword(ctx echo.Context) error {
 		validated.Password,
 	); err != nil {
 		switch {
-		case errors.Is(err, domain.ErrInvalidToken) || errors.Is(err, domain.ErrExpiredToken):
-			return jsonUnauthorizedResponse(ctx, err.Error())
+		case errors.Is(err, domain.ErrInvalidToken):
+			return jsonUnauthorizedResponse(ctx, invalidToken, err.Error())
+		case errors.Is(err, domain.ErrExpiredToken):
+			return jsonUnauthorizedResponse(ctx, expiredToken, err.Error())
 
 		case errors.Is(err, domain.ErrUserNotFound):
-			return jsonUnauthorizedResponse(ctx, domain.ErrInvalidToken.Error())
+			return jsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
 
 		default:
 			h.logger.Error.Println(err)

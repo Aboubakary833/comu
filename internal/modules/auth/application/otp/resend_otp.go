@@ -57,7 +57,7 @@ func (useCase *ResendOtpUC) Execute(ctx context.Context, input ResendOtpInput) e
 	if !req.CanOtpBeSent() {
 		return domain.ErrResendRequestCantBeProcessed
 	}
-	
+
 	if req.IsCountExceeded() {
 		return domain.ErrResendRequestCountExceeded
 	}

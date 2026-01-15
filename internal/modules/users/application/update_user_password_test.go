@@ -30,7 +30,6 @@ func TestUpdateUserPasswordUseCase(t *testing.T) {
 		user := domain.NewUser("John Doe", "johndoe@gmail.com", "Jf9bCEDh6QBFvYsonX0Vc4TGFHQJYXx5X8ro=")
 		repo.Store(ctx, user)
 
-
 		useCase := application.NewUpdateUserPasswordUseCase(repo)
 
 		newPassword := "j3oQQv3RSVJygVeYAHmrtY++2lxkDpVzFXRyM="

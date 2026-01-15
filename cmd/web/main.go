@@ -4,7 +4,7 @@ import (
 	"comu/config"
 	"comu/internal/shared/logger"
 	"database/sql"
-	
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -34,7 +34,7 @@ func main() {
 		middleware.Recover(),
 		middleware.RemoveTrailingSlash(),
 		middleware.Secure(),
-	)	
+	)
 
 	// Register modules routes
 

@@ -14,9 +14,9 @@ func TestMarkUserEmailAsVerifiedUseCase(t *testing.T) {
 	t.Run("it should fail and return ErrUserNotFound", func(t *testing.T) {
 		repo := memory.NewInMemoryRepository(nil)
 		ctx := context.Background()
-		
+
 		userEmail := "johndoe@gmail.com"
-		
+
 		useCase := application.NewMarkUserEmailAsVerifiedUseCase(repo)
 
 		err := useCase.Execute(ctx, userEmail)
@@ -26,7 +26,7 @@ func TestMarkUserEmailAsVerifiedUseCase(t *testing.T) {
 	t.Run("it should succeed and update the user password", func(t *testing.T) {
 		repo := memory.NewInMemoryRepository(nil)
 		ctx := context.Background()
-		
+
 		userEmail := "johndoe@gmail.com"
 		user := domain.NewUser("John Doe", userEmail, "secret#pass1234")
 		repo.Store(ctx, user)

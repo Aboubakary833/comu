@@ -11,6 +11,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var (
+	userEmailTaken errorType = "user_email_taken"
+)
+
 type RegisterHandlers struct {
 	registerUC           register.RegisterUC
 	genAuthTokenUC       tokens.GenerateAuthTokensUC
@@ -62,7 +66,7 @@ func (h *RegisterHandlers) Register(ctx echo.Context) error {
 	); err != nil {
 
 		if errors.Is(err, domain.ErrUserEmailTaken) {
-			return jsonUnauthorizedResponse(ctx, err.Error())
+			return jsonUnauthorizedResponse(ctx, userEmailTaken, err.Error())
 		}
 
 		h.logger.Error.Println(err)
@@ -77,7 +81,7 @@ func (h *RegisterHandlers) VerifyOtp(ctx echo.Context) error {
 
 		if err := h.markUserAsVerifiedUC.Execute(ctx.Request().Context(), validated.Email); err != nil {
 			if errors.Is(err, domain.ErrUserEmailTaken) {
-				return jsonUnauthorizedResponse(ctx, domain.ErrInvalidOtp.Error())
+				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
@@ -88,7 +92,7 @@ func (h *RegisterHandlers) VerifyOtp(ctx echo.Context) error {
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, domain.ErrInternal.Error())
+				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)

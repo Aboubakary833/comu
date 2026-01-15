@@ -79,4 +79,3 @@ func (repo *resendOtpRequestsRepository) Delete(ctx context.Context, req *domain
 
 	return err
 }
-

@@ -90,9 +90,9 @@ func (repo *inMemoryCommentsRepository) List(ctx context.Context, postID uuid.UU
 		comments := allComments[:domain.DefaultPaginatorLimit]
 		return repo.listReturnValues(comments)
 	}
-	comments := allComments[afterIdx + 1:]
+	comments := allComments[afterIdx+1:]
 
-	if afterIdx + paginator.Limit > len(comments) {
+	if afterIdx+paginator.Limit > len(comments) {
 		return repo.listReturnValues(comments)
 	}
 
@@ -101,7 +101,7 @@ func (repo *inMemoryCommentsRepository) List(ctx context.Context, postID uuid.UU
 
 func (repo *inMemoryCommentsRepository) listReturnValues(comments []domain.Comment) ([]domain.Comment, *domain.Cursor, error) {
 	last := comments[len(comments)-1]
-	return comments, &domain.Cursor{ ID: last.ID, CreatedAt: last.CreatedAt }, nil
+	return comments, &domain.Cursor{ID: last.ID, CreatedAt: last.CreatedAt}, nil
 }
 
 func (repo *inMemoryCommentsRepository) Find(ctx context.Context, ID uuid.UUID) (*domain.Comment, error) {
@@ -143,17 +143,20 @@ func (repo *inMemoryCommentsRepository) FillWithRandomComments(postID, authorID 
 			authorID = uuid.New()
 		}
 
-		content := fmt.Sprintf("Post #%s comment #%d content", postID.String(), i + 1)
+		content := fmt.Sprintf("Post #%s comment #%d content", postID.String(), i+1)
 		repo.Store(ctx, domain.NewComment(postID, authorID, content))
 	}
 }
 
-
 func sortComments(comments []domain.Comment) {
 	slices.SortFunc(comments, func(a domain.Comment, b domain.Comment) int {
-		if a.CreatedAt.Before(b.CreatedAt) { return - 1 }
-		if a.CreatedAt.After(b.CreatedAt) { return 1 }
-		
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return -1
+		}
+		if a.CreatedAt.After(b.CreatedAt) {
+			return 1
+		}
+
 		return 0
 	})
 }

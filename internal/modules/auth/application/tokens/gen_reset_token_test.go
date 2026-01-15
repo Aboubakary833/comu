@@ -36,9 +36,9 @@ func TestGenerateResetTokenUseCase(t *testing.T) {
 
 		userEmail := "johndoe@gmail.com"
 		user := &domain.AuthUser{
-			ID: uuid.New(),
-			Name: "John Doe",
-			Email: userEmail,
+			ID:       uuid.New(),
+			Name:     "John Doe",
+			Email:    userEmail,
 			Password: "secret#pass1234",
 		}
 
@@ -51,7 +51,7 @@ func TestGenerateResetTokenUseCase(t *testing.T) {
 
 		if _assert.NoError(err) && _assert.NotEmpty(tokenString) {
 			token, err := resetTokensRepository.Find(ctx, tokenString)
-			
+
 			if _assert.NoError(err) && _assert.NotNil(token) {
 				_assert.Equal(user.ID, token.UserID)
 				_assert.False(token.Expired())

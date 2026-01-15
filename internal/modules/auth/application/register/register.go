@@ -6,10 +6,10 @@ import (
 )
 
 type RegisterUC struct {
-	userService         domain.UserService
-	passwordService     domain.PasswordService
-	otpCodeRepository   domain.OtpCodesRepository
-	notificationService domain.NotificationService
+	userService                 domain.UserService
+	passwordService             domain.PasswordService
+	otpCodeRepository           domain.OtpCodesRepository
+	notificationService         domain.NotificationService
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
 }
 
@@ -19,13 +19,13 @@ func NewUseCase(
 	otpCodeRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
-	
+
 ) *RegisterUC {
 	return &RegisterUC{
-		userService:         userService,
-		passwordService:     passwordService,
-		otpCodeRepository:   otpCodeRepository,
-		notificationService: notificationService,
+		userService:                 userService,
+		passwordService:             passwordService,
+		otpCodeRepository:           otpCodeRepository,
+		notificationService:         notificationService,
 		resendOtpRequestsRepository: resendOtpRequestsRepository,
 	}
 }
@@ -49,7 +49,7 @@ func (useCase *RegisterUC) Execute(ctx context.Context, name, email, password st
 		return err
 	}
 	err = useCase.resendOtpRequestsRepository.CreateNew(ctx, email)
-	
+
 	if err != nil {
 		return err
 	}

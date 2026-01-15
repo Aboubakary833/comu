@@ -64,4 +64,3 @@ func (repo *refreshTokensRepository) Revoke(ctx context.Context, token *domain.R
 
 	return err
 }
-

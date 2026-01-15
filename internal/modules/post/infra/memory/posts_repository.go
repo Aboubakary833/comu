@@ -63,19 +63,18 @@ func (repo *inMemoryPostsRepository) List(ctx context.Context, paginator domain.
 		posts := allPosts[:domain.DefaultPaginatorLimit]
 		return repo.listReturnValues(posts)
 	}
-	posts := allPosts[afterIdx + 1:]
+	posts := allPosts[afterIdx+1:]
 
-	if afterIdx + paginator.Limit > len(posts) {
+	if afterIdx+paginator.Limit > len(posts) {
 		return repo.listReturnValues(posts)
 	}
-
 
 	return repo.listReturnValues(posts[:paginator.Limit])
 }
 
 func (repo *inMemoryPostsRepository) listReturnValues(posts []domain.Post) ([]domain.Post, *domain.Cursor, error) {
 	last := posts[len(posts)-1]
-	return posts, &domain.Cursor{ ID: last.ID, CreatedAt: last.CreatedAt }, nil
+	return posts, &domain.Cursor{ID: last.ID, CreatedAt: last.CreatedAt}, nil
 }
 
 func (repo *inMemoryPostsRepository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.Post, error) {
@@ -141,7 +140,6 @@ func (repo *inMemoryPostsRepository) Delete(ctx context.Context, post *domain.Po
 	return nil
 }
 
-
 // FillWithRandomPosts is a test factory method which main purpose is
 // to generate a number of random posts and store them in the repo.
 func (repo *inMemoryPostsRepository) FillWithRandomPosts(userID uuid.UUID, length int) {
@@ -151,7 +149,7 @@ func (repo *inMemoryPostsRepository) FillWithRandomPosts(userID uuid.UUID, lengt
 		userID = uuid.New()
 	}
 	for i := range length {
-		title := fmt.Sprintf("Post #%d", i + 1)
+		title := fmt.Sprintf("Post #%d", i+1)
 		content := fmt.Sprintf("%s content", title)
 		post := domain.NewPost(userID, title, content)
 
@@ -161,9 +159,13 @@ func (repo *inMemoryPostsRepository) FillWithRandomPosts(userID uuid.UUID, lengt
 
 func sortPosts(posts []domain.Post) {
 	slices.SortFunc(posts, func(a domain.Post, b domain.Post) int {
-		if a.CreatedAt.Before(b.CreatedAt) { return - 1 }
-		if a.CreatedAt.After(b.CreatedAt) { return 1 }
-		
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return -1
+		}
+		if a.CreatedAt.After(b.CreatedAt) {
+			return 1
+		}
+
 		return 0
 	})
 }

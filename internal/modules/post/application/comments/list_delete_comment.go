@@ -27,7 +27,6 @@ func NewDeleteCommentUseCase(repository domain.CommentRepository) *DeleteComment
 	}
 }
 
-
 func (useCase *ListCommentsUC) Execute(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, *domain.Cursor, error) {
 	if paginator.Limit <= 0 {
 		paginator.Limit = domain.DefaultPaginatorLimit

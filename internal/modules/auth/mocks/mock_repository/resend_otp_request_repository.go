@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-
 type resendOtpRequestsRepository struct {
 	mock.Mock
 }

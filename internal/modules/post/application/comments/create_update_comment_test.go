@@ -15,9 +15,9 @@ func TestCreateCommentUseCase(t *testing.T) {
 	useCase := NewCreateCommentUseCase(repo)
 
 	input := CreateCommentInput{
-		PostID: uuid.New(),
+		PostID:   uuid.New(),
 		AuthorID: uuid.New(),
-		Content: "Test comment",
+		Content:  "Test comment",
 	}
 
 	_, err := useCase.Execute(context.Background(), input)

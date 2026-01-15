@@ -19,7 +19,7 @@ func TestListPostsUseCase(t *testing.T) {
 		repo.FillWithRandomPosts(uuid.Nil, 15)
 		useCase := NewListPostsUseCase(repo)
 
-		posts, cursor, err := useCase.Execute(context.Background(), domain.Paginator{ Limit: -3 })
+		posts, cursor, err := useCase.Execute(context.Background(), domain.Paginator{Limit: -3})
 
 		if _assert.NoError(err) {
 			_assert.Equal(10, len(posts))
@@ -57,7 +57,7 @@ func TestListPostsUseCase(t *testing.T) {
 		posts, nextCursor, err := useCase.Execute(ctx, domain.Paginator{
 			Limit: 8,
 			After: &domain.Cursor{
-				ID: post.ID,
+				ID:        post.ID,
 				CreatedAt: post.CreatedAt,
 			},
 		})

@@ -6,8 +6,8 @@ import (
 )
 
 type GenAccessTokenFromRefreshUC struct {
-	jwtService domain.JwtService
-	userService domain.UserService
+	jwtService              domain.JwtService
+	userService             domain.UserService
 	refreshTokensRepository domain.RefreshTokensRepository
 }
 
@@ -15,10 +15,10 @@ func NewGenAccessTokenFromRefreshUseCase(
 	jwtService domain.JwtService,
 	userService domain.UserService,
 	tokensRepository domain.RefreshTokensRepository,
-	) *GenAccessTokenFromRefreshUC {
+) *GenAccessTokenFromRefreshUC {
 	return &GenAccessTokenFromRefreshUC{
-		jwtService: jwtService,
-		userService: userService,
+		jwtService:              jwtService,
+		userService:             userService,
 		refreshTokensRepository: tokensRepository,
 	}
 }

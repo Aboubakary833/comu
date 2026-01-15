@@ -24,6 +24,6 @@ func (useCase *UpdateUserPasswordUC) Execute(ctx context.Context, userID uuid.UU
 		return err
 	}
 	user.Password = newPassword
-	
+
 	return useCase.repo.Update(ctx, user)
 }

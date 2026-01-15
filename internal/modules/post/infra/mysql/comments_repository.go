@@ -125,8 +125,6 @@ func (repo *commentsRepository) Delete(ctx context.Context, comment *domain.Comm
 	return err
 }
 
-
-
 func (repo *commentsRepository) getCommentsFromRows(rows *sql.Rows) ([]domain.Comment, error) {
 	comments := []domain.Comment{}
 

@@ -16,7 +16,7 @@ func TestInMemoryRepositoryStoreMethod(t *testing.T) {
 		newUser := domain.NewUser("John Doe", "johndoe@gmail.com", "uUu4MRrxPBhVmqUnb6m1upSh")
 		_assert := assert.New(t)
 
-		result := repo.Store(context.Background(),newUser)
+		result := repo.Store(context.Background(), newUser)
 
 		if _assert.Nil(result) {
 			_assert.NotEmpty(newUser.ID.Value())

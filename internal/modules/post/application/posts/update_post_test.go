@@ -24,10 +24,10 @@ func TestUpdatePostUseCase(t *testing.T) {
 		useCase := NewUpdatePostUseCase(repo)
 
 		slug, err := useCase.Execute(ctx, UpdatePostInput{
-			PostID: post.ID,
+			PostID:   post.ID,
 			AuthorID: userID,
-			Title: "Updated test post title",
-			Content: "Test post updated content",
+			Title:    "Updated test post title",
+			Content:  "Test post updated content",
 		})
 
 		if _assert.NoError(err) {
@@ -52,10 +52,10 @@ func TestUpdatePostUseCase(t *testing.T) {
 		useCase := NewUpdatePostUseCase(repo)
 
 		slug, err := useCase.Execute(ctx, UpdatePostInput{
-			PostID: post.ID,
+			PostID:   post.ID,
 			AuthorID: userID,
-			Title: post.Title,
-			Content: "Test post updated content",
+			Title:    post.Title,
+			Content:  "Test post updated content",
 		})
 
 		if _assert.NoError(err) {
@@ -78,10 +78,10 @@ func TestUpdatePostUseCase(t *testing.T) {
 		useCase := NewUpdatePostUseCase(repo)
 
 		_, err := useCase.Execute(ctx, UpdatePostInput{
-			PostID: post.ID,
+			PostID:   post.ID,
 			AuthorID: uuid.New(),
-			Title: post.Title,
-			Content: "Test post updated content",
+			Title:    post.Title,
+			Content:  "Test post updated content",
 		})
 
 		assert.ErrorIs(t, err, domain.ErrUnauthorized)

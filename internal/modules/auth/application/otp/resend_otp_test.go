@@ -19,7 +19,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
 		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
-		
+
 		reqID := uuid.New()
 		userEmail := "johndoe@gmail.com"
 
@@ -33,8 +33,8 @@ func TestResendOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, ResendOtpInput{
-				ID: reqID,
-				UserEmail: userEmail,
+				ID:          reqID,
+				UserEmail:   userEmail,
 				OtpCodeType: domain.LoginOTP,
 			},
 		)
@@ -50,7 +50,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
 		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
-		
+
 		userEmail := "johndoe@gmail.com"
 		req := domain.NewResendOtpRequest(userEmail)
 
@@ -65,8 +65,8 @@ func TestResendOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, ResendOtpInput{
-				ID: req.ID,
-				UserEmail: userEmail,
+				ID:          req.ID,
+				UserEmail:   userEmail,
 				OtpCodeType: domain.LoginOTP,
 			},
 		)
@@ -82,7 +82,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
 		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
-		
+
 		userEmail := "johndoe@gmail.com"
 		otpCode := domain.NewOtpCode(domain.RegisterOTP, userEmail, domain.DefaultOtpCodeTTL)
 		req := domain.NewResendOtpRequest(userEmail)
@@ -98,8 +98,8 @@ func TestResendOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, ResendOtpInput{
-				ID: req.ID,
-				UserEmail: userEmail,
+				ID:          req.ID,
+				UserEmail:   userEmail,
 				OtpCodeType: domain.LoginOTP,
 			},
 		)
@@ -115,7 +115,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
 		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
-		
+
 		userEmail := "johndoe@gmail.com"
 		otpCode := domain.NewOtpCode(domain.LoginOTP, userEmail, domain.DefaultOtpCodeTTL)
 		req := domain.NewResendOtpRequest(userEmail)
@@ -132,8 +132,8 @@ func TestResendOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, ResendOtpInput{
-				ID: req.ID,
-				UserEmail: userEmail,
+				ID:          req.ID,
+				UserEmail:   userEmail,
 				OtpCodeType: domain.LoginOTP,
 			},
 		)
@@ -143,6 +143,5 @@ func TestResendOtpUseCase(t *testing.T) {
 		otpCodesRepository.AssertExpectations(t)
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
 	})
-
 
 }

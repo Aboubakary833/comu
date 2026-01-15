@@ -75,7 +75,6 @@ func (service *smtpNotificationService) SendPasswordChangedMessage(userEmail str
 	return service.client.DialAndSend(msg)
 }
 
-
 func (service *smtpNotificationService) newMessage(receiverEmail string) (*mail.Msg, error) {
 	msg := mail.NewMsg()
 

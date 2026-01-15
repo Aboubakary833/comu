@@ -25,12 +25,11 @@ func TestVerifyOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, VerifyOtpInput{
-				UserEmail: userEmail,
-				OtpCodeType: domain.LoginOTP,
+				UserEmail:    userEmail,
+				OtpCodeType:  domain.LoginOTP,
 				OtpCodeValue: otpCodeValue,
 			},
 		)
-				
 
 		assert.ErrorIs(t, err, domain.ErrInvalidOtp)
 		otpCodesRepository.AssertExpectations(t)
@@ -49,8 +48,8 @@ func TestVerifyOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, VerifyOtpInput{
-				UserEmail: userEmail,
-				OtpCodeType: domain.LoginOTP,
+				UserEmail:    userEmail,
+				OtpCodeType:  domain.LoginOTP,
 				OtpCodeValue: otpCode.Value,
 			},
 		)
@@ -72,8 +71,8 @@ func TestVerifyOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, VerifyOtpInput{
-				UserEmail: userEmail,
-				OtpCodeType: domain.LoginOTP,
+				UserEmail:    userEmail,
+				OtpCodeType:  domain.LoginOTP,
 				OtpCodeValue: otpCode.Value,
 			},
 		)
@@ -96,8 +95,8 @@ func TestVerifyOtpUseCase(t *testing.T) {
 
 		err := useCase.Execute(
 			ctx, VerifyOtpInput{
-				UserEmail: userEmail,
-				OtpCodeType: domain.RegisterOTP,
+				UserEmail:    userEmail,
+				OtpCodeType:  domain.RegisterOTP,
 				OtpCodeValue: otpCode.Value,
 			},
 		)

@@ -5,7 +5,6 @@ import (
 	"context"
 )
 
-
 type ListPostsUC struct {
 	repo domain.PostRepository
 }
@@ -30,7 +29,7 @@ func (useCase *ListPostsUC) Execute(ctx context.Context, paginator domain.Pagina
 	if paginator.Limit <= 0 {
 		paginator.Limit = domain.DefaultPaginatorLimit
 	}
-	
+
 	post, cursor, err := useCase.repo.List(ctx, paginator)
 
 	if err != nil {

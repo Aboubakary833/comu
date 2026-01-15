@@ -35,7 +35,7 @@ func TestGenAccessTokenFromRefreshUseCase(t *testing.T) {
 		userService := mockService.NewUserServiceMock()
 		ctx := context.Background()
 
-		token := domain.NewRefreshToken(uuid.New(), -2 * time.Hour)
+		token := domain.NewRefreshToken(uuid.New(), -2*time.Hour)
 		repository.Store(ctx, token)
 
 		useCase := NewGenAccessTokenFromRefreshUseCase(jwtService, userService, repository)
@@ -73,19 +73,19 @@ func TestGenAccessTokenFromRefreshUseCase(t *testing.T) {
 
 		accessToken := "9eVRLumOWfl+VW2WVFwz5iW3WYLHhvo0ALP2vk8B4uc="
 		user := &domain.AuthUser{
-			ID: uuid.New(),
-			Name: "John Doe",
-			Email: "johndoe@gmail.com",
+			ID:       uuid.New(),
+			Name:     "John Doe",
+			Email:    "johndoe@gmail.com",
 			Password: "secret#pass1234",
 		}
-		token := domain.NewRefreshToken(user.ID, time.Hour * 22)
+		token := domain.NewRefreshToken(user.ID, time.Hour*22)
 		repository.Store(ctx, token)
-		
+
 		jwtService.On("GenerateToken", user).Return(accessToken, nil).Once()
 		userService.On("GetUserByID", ctx, token.UserID).Return(user, nil).Once()
 
 		useCase := NewGenAccessTokenFromRefreshUseCase(jwtService, userService, repository)
-		
+
 		generatedToken, err := useCase.Execute(ctx, token.Token)
 		_assert := assert.New(t)
 
@@ -95,11 +95,11 @@ func TestGenAccessTokenFromRefreshUseCase(t *testing.T) {
 			_assert.Equal(accessToken, generatedToken)
 
 			retrievedRefreshToken, err := repository.Find(ctx, token.Token)
-			
+
 			if _assert.NoError(err) {
 				_assert.True(
 					time.Now().Add(
-						domain.DefaultRefreshTokenTTL - 10 * time.Hour,
+						domain.DefaultRefreshTokenTTL - 10*time.Hour,
 					).Before(retrievedRefreshToken.ExpiredAt),
 				)
 			}

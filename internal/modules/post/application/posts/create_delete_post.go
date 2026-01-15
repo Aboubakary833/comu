@@ -8,8 +8,8 @@ import (
 )
 
 type CreatePostInput struct {
-	UserID	uuid.UUID
-	Title	string
+	UserID  uuid.UUID
+	Title   string
 	Content string
 }
 

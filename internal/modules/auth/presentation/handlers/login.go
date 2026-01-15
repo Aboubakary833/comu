@@ -13,13 +13,19 @@ import (
 
 var verificationSentMessage = "A verification code has been sent to your mail."
 
+var (
+	invalidCredentials errorType = "invalid_credentials"
+	invalidToken       errorType = "invalid_token"
+	expiredToken       errorType = "expired_token"
+)
+
 type LoginHandlers struct {
 	loginUC                     login.LoginUC
 	genAuthTokenUC              tokens.GenerateAuthTokensUC
 	genAccessTokenFromRefreshUC tokens.GenAccessTokenFromRefreshUC
 
 	otpHandlers *OtpHandlers
-	logger		*logger.Log
+	logger      *logger.Log
 }
 
 func NewLoginHandlers(
@@ -36,7 +42,7 @@ func NewLoginHandlers(
 		genAccessTokenFromRefreshUC: genAccessTokenFromRefreshUC,
 
 		otpHandlers: otpHandler,
-		logger: logger,
+		logger:      logger,
 	}
 }
 
@@ -68,7 +74,7 @@ func (h *LoginHandlers) Login(ctx echo.Context) error {
 
 		switch {
 		case errors.Is(err, domain.ErrInvalidCredentials):
-			return jsonUnauthorizedResponse(ctx, err.Error())
+			return jsonUnauthorizedResponse(ctx, invalidCredentials, err.Error())
 		default:
 			h.logger.Error.Println(err)
 			return jsonInternalErrorResponse(ctx)
@@ -84,7 +90,7 @@ func (h *LoginHandlers) VerifyOtp(ctx echo.Context) error {
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, domain.ErrInvalidOtp.Error())
+				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
@@ -113,15 +119,32 @@ func (h *LoginHandlers) Refresh(ctx echo.Context) error {
 	}
 
 	if data.Token == "" {
-		return jsonUnauthorizedResponse(ctx, domain.ErrInvalidToken.Error())
+		return jsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
 	}
 
 	token, err := h.genAccessTokenFromRefreshUC.Execute(
 		ctx.Request().Context(),
 		data.Token,
-	);
+	)
 
 	if err != nil {
-		
+		switch {
+		case errors.Is(err, domain.ErrExpiredToken):
+			return jsonUnauthorizedResponse(ctx, expiredToken, err.Error())
+
+		case errors.Is(err, domain.ErrUserEmailTaken):
+			return jsonUnauthorizedResponse(
+				ctx, invalidToken,
+				domain.ErrInvalidToken.Error(),
+			)
+
+		default:
+			h.logger.Error.Println(err)
+			return jsonInternalErrorResponse(ctx)
+		}
 	}
+
+	return jsonSuccessWithDataResponse(ctx, map[string]string{
+		"access_token": token,
+	})
 }

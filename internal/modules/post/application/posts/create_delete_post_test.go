@@ -15,8 +15,8 @@ func TestCreatePostUseCase(t *testing.T) {
 	useCase := NewCreatePostUseCase(repo)
 
 	input := CreatePostInput{
-		UserID: uuid.New(),
-		Title: "Test post",
+		UserID:  uuid.New(),
+		Title:   "Test post",
 		Content: "This is a test post",
 	}
 

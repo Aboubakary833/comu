@@ -118,7 +118,6 @@ func (repo *postsRepository) Delete(ctx context.Context, post *domain.Post) erro
 	return err
 }
 
-
 func (repo *postsRepository) findQuery(ctx context.Context, column, value string) (*domain.Post, error) {
 	queryVal := "?"
 

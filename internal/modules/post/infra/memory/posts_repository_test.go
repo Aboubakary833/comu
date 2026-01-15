@@ -27,7 +27,7 @@ func TestInMemoryPostsRepositoryStoreMethod(t *testing.T) {
 func TestInMemoryPostsRepositoryFindByIdAndFindBySlugMethod(t *testing.T) {
 	t.Run("FindByID should fail and return ErrPostNotFound", func(t *testing.T) {
 		repo := NewInMemoryPostsRepository(nil)
-		
+
 		post, err := repo.FindByID(context.Background(), uuid.New())
 		assert.ErrorIs(t, err, domain.ErrPostNotFound)
 		assert.Nil(t, post)
@@ -48,10 +48,10 @@ func TestInMemoryPostsRepositoryFindByIdAndFindBySlugMethod(t *testing.T) {
 
 		post := domain.NewPost(uuid.New(), "Post #34", "Post #34 content")
 		repo.Store(ctx, post)
-		
+
 		retrievedPost, err := repo.FindByID(ctx, post.ID)
 		_assert := assert.New(t)
-		
+
 		if _assert.NoError(err) {
 			_assert.Equal(post.Title, retrievedPost.Title)
 			_assert.Equal(post.Content, retrievedPost.Content)
@@ -64,10 +64,10 @@ func TestInMemoryPostsRepositoryFindByIdAndFindBySlugMethod(t *testing.T) {
 
 		post := domain.NewPost(uuid.New(), "Post #34", "Post #34 content")
 		repo.Store(ctx, post)
-		
+
 		retrievedPost, err := repo.FindBySlug(ctx, post.Slug)
 		_assert := assert.New(t)
-		
+
 		if _assert.NoError(err) {
 			_assert.Equal(post.Title, retrievedPost.Title)
 			_assert.Equal(post.Content, retrievedPost.Content)
@@ -78,7 +78,7 @@ func TestInMemoryPostsRepositoryFindByIdAndFindBySlugMethod(t *testing.T) {
 func TestInMemoryPostsRepositoryListMethod(t *testing.T) {
 	t.Run("it should return empty slice when repo is empty", func(t *testing.T) {
 		repo := NewInMemoryPostsRepository(nil)
-		
+
 		posts, cursor, err := repo.List(context.Background(), domain.Paginator{})
 		_assert := assert.New(t)
 
@@ -91,7 +91,7 @@ func TestInMemoryPostsRepositoryListMethod(t *testing.T) {
 		repo := NewInMemoryPostsRepository(nil)
 		repo.FillWithRandomPosts(uuid.Nil, 18)
 
-		posts, cursor, err := repo.List(context.Background(), domain.Paginator{ Limit: 12 })
+		posts, cursor, err := repo.List(context.Background(), domain.Paginator{Limit: 12})
 		_assert := assert.New(t)
 
 		if _assert.NoError(err) {
@@ -115,13 +115,13 @@ func TestInMemoryPostsRepositoryListMethod(t *testing.T) {
 		repo.Store(ctx, post)
 		repo.FillWithRandomPosts(uuid.Nil, 8)
 
-		prevList, prevCursor, err := repo.List(ctx, domain.Paginator{ Limit: 10 })
-		
+		prevList, prevCursor, err := repo.List(ctx, domain.Paginator{Limit: 10})
+
 		if _assert.NoError(err) && _assert.Equal(10, len(prevList)) {
 			_assert.Equal(post.ID, prevCursor.ID)
 			_assert.Equal(post.CreatedAt, prevCursor.CreatedAt)
 
-			currList, currCursor, err := repo.List(ctx, domain.Paginator{ Limit: 10, After: prevCursor })
+			currList, currCursor, err := repo.List(ctx, domain.Paginator{Limit: 10, After: prevCursor})
 
 			if _assert.NoError(err) {
 				_assert.Equal(8, len(currList))

@@ -7,10 +7,10 @@ import (
 )
 
 type LoginUC struct {
-	userService         domain.UserService
-	otpCodeRepository   domain.OtpCodesRepository
-	notificationService domain.NotificationService
-	passwordService    domain.PasswordService
+	userService                 domain.UserService
+	otpCodeRepository           domain.OtpCodesRepository
+	notificationService         domain.NotificationService
+	passwordService             domain.PasswordService
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
 }
 
@@ -22,10 +22,10 @@ func NewUseCase(
 	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
 ) *LoginUC {
 	return &LoginUC{
-		userService:         userService,
-		passwordService:    passwordService,
-		otpCodeRepository:   otpCodeRepository,
-		notificationService: notificationService,
+		userService:                 userService,
+		passwordService:             passwordService,
+		otpCodeRepository:           otpCodeRepository,
+		notificationService:         notificationService,
 		resendOtpRequestsRepository: resendOtpRequestsRepository,
 	}
 }
@@ -51,7 +51,7 @@ func (useCase *LoginUC) Execute(ctx context.Context, email, password string) err
 		return err
 	}
 	err = useCase.resendOtpRequestsRepository.CreateNew(ctx, user.Email)
-	
+
 	if err != nil {
 		return err
 	}

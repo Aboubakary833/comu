@@ -39,7 +39,7 @@ type GetUserResponse struct {
 }
 
 type UpdateUserPasswordRequest struct {
-	ID 			uuid.UUID
+	ID          uuid.UUID
 	NewPassword string
 }
 

@@ -40,10 +40,6 @@ var LoginValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 	"password": zog.String().Required(zog.Message(msgPasswordRequired)),
 }))
 
-var RefreshValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
-	"refresh_token": zog.String().Required(zog.Message(msgTokenRequired))
-}))
-
 var RegisterValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 	"name": zog.String().Required(zog.Message(msgNameRequired)).
 		Min(3, zog.Message(msgNameTooShort)).Max(50, zog.Message(msgNameTooBig)),

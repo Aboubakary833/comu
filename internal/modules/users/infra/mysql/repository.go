@@ -108,7 +108,7 @@ func (repo *repository) Update(ctx context.Context, user *domain.User) error {
 func (repo *repository) Delete(ctx context.Context, user *domain.User) error {
 	deleteTime := time.Now()
 	query := "UPDATE users SET deleted_at = ? WHERE id = UUID_TO_BIN(?)"
-	
+
 	user.DeletedAt = &deleteTime
 	_, err := repo.db.ExecContext(ctx, query, deleteTime, user.ID)
 

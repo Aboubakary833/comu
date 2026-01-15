@@ -59,7 +59,6 @@ func TestInMemoryResetTokensRepositoryFindMethod(t *testing.T) {
 	})
 }
 
-
 func TestInMemoryResetTokensRepositoryDeleteMethod(t *testing.T) {
 
 	t.Run("it should successfully delete a given reset token", func(t *testing.T) {
@@ -90,4 +89,3 @@ func TestInMemoryResetTokensRepositoryDeleteMethod(t *testing.T) {
 	})
 
 }
-

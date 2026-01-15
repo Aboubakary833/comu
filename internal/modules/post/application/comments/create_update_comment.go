@@ -8,7 +8,7 @@ import (
 )
 
 type CreateCommentInput struct {
-	PostID 	 uuid.UUID
+	PostID   uuid.UUID
 	AuthorID uuid.UUID
 	Content  string
 }
@@ -44,7 +44,6 @@ func (useCase *CreateCommentUC) Execute(ctx context.Context, input CreateComment
 
 	return comment, nil
 }
-
 
 func (useCase *UpdateCommentUC) Execute(ctx context.Context, commentID, authorID uuid.UUID, content string) error {
 	comment, err := useCase.repo.Find(ctx, commentID)

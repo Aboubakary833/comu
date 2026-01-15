@@ -7,8 +7,8 @@ import (
 )
 
 type VerifyOtpInput struct {
-	UserEmail string
-	OtpCodeType domain.OtpType
+	UserEmail    string
+	OtpCodeType  domain.OtpType
 	OtpCodeValue string
 }
 

@@ -29,7 +29,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(context.Background(), tokenString, newPassword)
-		
+
 		assert.ErrorIs(t, err, domain.ErrInvalidToken)
 		passwordService.AssertExpectations(t)
 		userService.AssertNotCalled(t, "UpdateUserPassword")
@@ -45,7 +45,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 
 		userID := uuid.New()
 		userEmail := "johndoe@gmail.com"
-		token := domain.NewResetToken(userID, userEmail, -20 * time.Minute)
+		token := domain.NewResetToken(userID, userEmail, -20*time.Minute)
 		newPassword := "xdAPktpKLjcEy8ncy7Cqall95m4"
 		hashedNewPassword := "cZDdc3CmKwYE8AoNMJ+kG4D52C6IYKzcuxWAmOSr1vs"
 
@@ -55,7 +55,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(ctx, token.Token, newPassword)
-		
+
 		assert.ErrorIs(t, err, domain.ErrExpiredToken)
 		passwordService.AssertExpectations(t)
 		userService.AssertNotCalled(t, "UpdateUserPassword")
@@ -82,7 +82,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(ctx, token.Token, newPassword)
-		
+
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 		passwordService.AssertExpectations(t)
 		userService.AssertExpectations(t)
@@ -110,7 +110,7 @@ func TestNewPasswordUseCase(t *testing.T) {
 		useCase := NewSetNewPasswordUseCase(userService, passwordService, notificationService, resetTokensRepository)
 
 		err := useCase.Execute(ctx, token.Token, newPassword)
-		
+
 		assert.NoError(t, err)
 		passwordService.AssertExpectations(t)
 		userService.AssertExpectations(t)

@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestInMemoryCommentsRepositoryStoreMethod(t *testing.T) {
 	repo := NewInMemoryCommentsRepository(nil)
 	ctx := context.Background()
@@ -19,7 +18,7 @@ func TestInMemoryCommentsRepositoryStoreMethod(t *testing.T) {
 	postID := uuid.New()
 
 	for i := range 5 {
-		content := fmt.Sprintf("Post #%s comment #%d content", postID.String(), i + 1)
+		content := fmt.Sprintf("Post #%s comment #%d content", postID.String(), i+1)
 		comment := domain.NewComment(postID, userID, content)
 
 		err := repo.Store(ctx, comment)
@@ -88,7 +87,7 @@ func TestInMemoryCommentsRepositoryListAllMethod(t *testing.T) {
 func TestInMemoryCommentsRepositoryListMethod(t *testing.T) {
 	t.Run("it should return empty slice when repo is empty", func(t *testing.T) {
 		repo := NewInMemoryCommentsRepository(nil)
-		
+
 		comments, cursor, err := repo.List(context.Background(), uuid.New(), domain.Paginator{})
 		_assert := assert.New(t)
 
@@ -102,7 +101,7 @@ func TestInMemoryCommentsRepositoryListMethod(t *testing.T) {
 		postID := uuid.New()
 		repo.FillWithRandomComments(postID, uuid.Nil, 15)
 
-		comments, cursor, err := repo.List(context.Background(), postID, domain.Paginator{ Limit: 10 })
+		comments, cursor, err := repo.List(context.Background(), postID, domain.Paginator{Limit: 10})
 		_assert := assert.New(t)
 
 		if _assert.NoError(err) {
@@ -127,13 +126,13 @@ func TestInMemoryCommentsRepositoryListMethod(t *testing.T) {
 		repo.Store(ctx, comment)
 		repo.FillWithRandomComments(postID, uuid.Nil, 6)
 
-		prevList, prevCursor, err := repo.List(ctx, postID, domain.Paginator{ Limit: 10 })
-		
+		prevList, prevCursor, err := repo.List(ctx, postID, domain.Paginator{Limit: 10})
+
 		if _assert.NoError(err) && _assert.Equal(10, len(prevList)) {
 			_assert.Equal(comment.ID, prevCursor.ID)
 			_assert.Equal(comment.CreatedAt, prevCursor.CreatedAt)
 
-			currList, currCursor, err := repo.List(ctx, postID, domain.Paginator{ Limit: 10, After: prevCursor })
+			currList, currCursor, err := repo.List(ctx, postID, domain.Paginator{Limit: 10, After: prevCursor})
 
 			if _assert.NoError(err) {
 				_assert.Equal(6, len(currList))

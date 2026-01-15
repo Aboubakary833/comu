@@ -21,7 +21,7 @@ func NewGenResetTokenUseCase(
 }
 
 func (useCase *GenerateResetTokenUC) Execute(ctx context.Context, userEmail string) (tokenString string, err error) {
-	user, err := useCase.userService.GetUserByEmail(ctx,userEmail)
+	user, err := useCase.userService.GetUserByEmail(ctx, userEmail)
 
 	if err != nil {
 		return
