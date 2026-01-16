@@ -6,33 +6,34 @@ import (
 	"comu/internal/modules/auth/domain"
 	"comu/internal/modules/auth/presentation/validation"
 	"comu/internal/shared/logger"
+	echoRes "comu/internal/shared/utils/echo_res"
 	"errors"
 
 	"github.com/labstack/echo/v4"
 )
 
 var (
-	userEmailTaken errorType = "user_email_taken"
+	userEmailTaken echoRes.ErrorResponseType = "user_email_taken"
 )
 
-type RegisterHandlers struct {
+type registerHandlers struct {
 	registerUC           *register.RegisterUC
 	genAuthTokenUC       *tokens.GenerateAuthTokensUC
 	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC
 
-	otpHandlers *OtpHandlers
+	otpHandlers *otpHandlers
 	logger      *logger.Log
 }
 
-func NewRegisterHandlers(
+func newRegisterHandlers(
 	registerUC *register.RegisterUC,
 	genAuthTokenUC *tokens.GenerateAuthTokensUC,
 	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC,
 
-	otpHandler *OtpHandlers,
+	otpHandler *otpHandlers,
 	logger *logger.Log,
-) *RegisterHandlers {
-	return &RegisterHandlers{
+) *registerHandlers {
+	return &registerHandlers{
 		registerUC:           registerUC,
 		genAuthTokenUC:       genAuthTokenUC,
 		markUserAsVerifiedUC: markUserAsVerifiedUC,
@@ -48,16 +49,16 @@ type registerFormData struct {
 	Password string `json:"password"`
 }
 
-func (h *RegisterHandlers) register(ctx echo.Context) error {
+func (h *registerHandlers) register(ctx echo.Context) error {
 	var data, validated registerFormData
 
 	if err := ctx.Bind(&data); err != nil {
-		return jsonInvalidRequestResponse(ctx)
+		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 	errList := validation.RegisterValidator.Validate(data, &validated)
 
 	if errList != nil {
-		return jsonValidationErrorResponse(ctx, errList)
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.registerUC.Execute(
@@ -66,40 +67,40 @@ func (h *RegisterHandlers) register(ctx echo.Context) error {
 	); err != nil {
 
 		if errors.Is(err, domain.ErrUserEmailTaken) {
-			return jsonUnauthorizedResponse(ctx, userEmailTaken, err.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, userEmailTaken, err.Error())
 		}
 
 		h.logger.Error.Println(err)
-		return jsonInternalErrorResponse(ctx)
+		return echoRes.JsonInternalErrorResponse(ctx)
 	}
 
-	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
+	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *RegisterHandlers) verifyOtp(ctx echo.Context) error {
+func (h *registerHandlers) verifyOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 
 		if err := h.markUserAsVerifiedUC.Execute(ctx.Request().Context(), validated.Email); err != nil {
 			if errors.Is(err, domain.ErrUserEmailTaken) {
-				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
+				return echoRes.JsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 
 		access, refresh, err := h.genAuthTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
+				return echoRes.JsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 
-		return jsonSuccessWithDataResponse(ctx, map[string]string{
+		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]string{
 			"access_token":  access,
 			"refresh_token": refresh,
 		})
@@ -108,12 +109,12 @@ func (h *RegisterHandlers) verifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *RegisterHandlers) resendOtp(ctx echo.Context) error {
+func (h *registerHandlers) resendOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.resend(domain.RegisterOTP)
 	return handler(ctx)
 }
 
-func (h *RegisterHandlers) RegisterRoutes(echo *echo.Echo) {
+func (h *registerHandlers) RegisterRoutes(echo *echo.Echo) {
 	groupRouter := echo.Group("/register")
 
 	groupRouter.POST("/", h.register)

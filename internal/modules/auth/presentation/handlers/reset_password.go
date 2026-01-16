@@ -6,29 +6,30 @@ import (
 	"comu/internal/modules/auth/domain"
 	"comu/internal/modules/auth/presentation/validation"
 	"comu/internal/shared/logger"
+	echoRes "comu/internal/shared/utils/echo_res"
 	"errors"
 
 	"github.com/labstack/echo/v4"
 )
 
-type ResetPasswordHandlers struct {
+type resetPasswordHandlers struct {
 	newPasswordUC   *resetPassword.SetNewPasswordUC
 	genResetTokenUC *tokens.GenerateResetTokenUC
 	resetPasswordUC *resetPassword.ResetPasswordUC
 
-	otpHandlers *OtpHandlers
+	otpHandlers *otpHandlers
 	logger      *logger.Log
 }
 
-func NewResetPasswordHandlers(
+func newResetPasswordHandlers(
 	newPasswordUC *resetPassword.SetNewPasswordUC,
 	genResetTokenUC *tokens.GenerateResetTokenUC,
 	resetPasswordUC *resetPassword.ResetPasswordUC,
 
-	otpHandlers *OtpHandlers,
+	otpHandlers *otpHandlers,
 	logger *logger.Log,
-) *ResetPasswordHandlers {
-	return &ResetPasswordHandlers{
+) *resetPasswordHandlers {
+	return &resetPasswordHandlers{
 		newPasswordUC:   newPasswordUC,
 		genResetTokenUC: genResetTokenUC,
 		resetPasswordUC: resetPasswordUC,
@@ -48,46 +49,46 @@ type newPasswordFormData struct {
 	PasswordConfirmation string `json:"password_confirmation"`
 }
 
-func (h *ResetPasswordHandlers) reset(ctx echo.Context) error {
+func (h *resetPasswordHandlers) reset(ctx echo.Context) error {
 	var data, validated resetPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
-		return jsonInvalidRequestResponse(ctx)
+		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 	errList := validation.ResetPasswordValidator.Validate(data, &validated)
 
 	if errList != nil {
-		return jsonValidationErrorResponse(ctx, errList)
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.resetPasswordUC.Execute(
 		ctx.Request().Context(), validated.Email,
 	); err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			return jsonSuccessMessageResponse(ctx, verificationSentMessage)
+			return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
 		}
 
 		h.logger.Error.Println(err)
-		return jsonInternalErrorResponse(ctx)
+		return echoRes.JsonInternalErrorResponse(ctx)
 	}
 
-	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
+	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *ResetPasswordHandlers) verifyOtp(ctx echo.Context) error {
+func (h *resetPasswordHandlers) verifyOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 		token, err := h.genResetTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
+				return echoRes.JsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 
-		return jsonSuccessWithDataResponse(
+		return echoRes.JsonSuccessWithDataResponse(
 			ctx, map[string]string{
 				"reset_token": token,
 			},
@@ -97,21 +98,21 @@ func (h *ResetPasswordHandlers) verifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *ResetPasswordHandlers) resendOtp(ctx echo.Context) error {
+func (h *resetPasswordHandlers) resendOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.resend(domain.ResetPasswordOTP)
 	return handler(ctx)
 }
 
-func (h *ResetPasswordHandlers) newPassword(ctx echo.Context) error {
+func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
 	var data, validated newPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
-		return jsonInvalidRequestResponse(ctx)
+		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 	errList := validation.NewPasswordValidator.Validate(data, &validated)
 
 	if errList != nil {
-		return jsonValidationErrorResponse(ctx, errList)
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.newPasswordUC.Execute(
@@ -121,23 +122,23 @@ func (h *ResetPasswordHandlers) newPassword(ctx echo.Context) error {
 	); err != nil {
 		switch {
 		case errors.Is(err, domain.ErrInvalidToken):
-			return jsonUnauthorizedResponse(ctx, invalidToken, err.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, invalidToken, err.Error())
 		case errors.Is(err, domain.ErrExpiredToken):
-			return jsonUnauthorizedResponse(ctx, expiredToken, err.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, expiredToken, err.Error())
 
 		case errors.Is(err, domain.ErrUserNotFound):
-			return jsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
 
 		default:
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 	}
 
-	return jsonSuccessMessageResponse(ctx, "Your password has been successfully updated.")
+	return echoRes.JsonSuccessMessageResponse(ctx, "Your password has been successfully updated.")
 }
 
-func (h *ResetPasswordHandlers) RegisterRoutes(echo *echo.Echo) {
+func (h *resetPasswordHandlers) RegisterRoutes(echo *echo.Echo) {
 	groupRouter := echo.Group("/reset_password")
 
 	groupRouter.POST("/", h.reset)

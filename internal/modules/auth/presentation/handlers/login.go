@@ -6,6 +6,7 @@ import (
 	"comu/internal/modules/auth/domain"
 	"comu/internal/modules/auth/presentation/validation"
 	"comu/internal/shared/logger"
+	echoRes "comu/internal/shared/utils/echo_res"
 	"errors"
 
 	"github.com/labstack/echo/v4"
@@ -14,29 +15,29 @@ import (
 var verificationSentMessage = "A verification code has been sent to your mail."
 
 var (
-	invalidCredentials errorType = "invalid_credentials"
-	invalidToken       errorType = "invalid_token"
-	expiredToken       errorType = "expired_token"
+	invalidCredentials echoRes.ErrorResponseType = "invalid_credentials"
+	invalidToken       echoRes.ErrorResponseType = "invalid_token"
+	expiredToken       echoRes.ErrorResponseType = "expired_token"
 )
 
-type LoginHandlers struct {
+type loginHandlers struct {
 	loginUC                     *login.LoginUC
 	genAuthTokenUC              *tokens.GenerateAuthTokensUC
 	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC
 
-	otpHandlers *OtpHandlers
+	otpHandlers *otpHandlers
 	logger      *logger.Log
 }
 
-func NewLoginHandlers(
+func newLoginHandlers(
 	loginUC *login.LoginUC,
 	genAuthTokenUC *tokens.GenerateAuthTokensUC,
 	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC,
 
-	otpHandler *OtpHandlers,
+	otpHandler *otpHandlers,
 	logger *logger.Log,
-) *LoginHandlers {
-	return &LoginHandlers{
+) *loginHandlers {
+	return &loginHandlers{
 		loginUC:                     loginUC,
 		genAuthTokenUC:              genAuthTokenUC,
 		genAccessTokenFromRefreshUC: genAccessTokenFromRefreshUC,
@@ -55,15 +56,15 @@ type refreshFormData struct {
 	Token string `json:"refresh_token"`
 }
 
-func (h *LoginHandlers) loginAttempt(ctx echo.Context) error {
+func (h *loginHandlers) loginAttempt(ctx echo.Context) error {
 	var data, validated loginFormData
 
 	if err := ctx.Bind(&data); err != nil {
-		return jsonInvalidRequestResponse(ctx)
+		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 
 	if errList := validation.LoginValidator.Validate(data, &validated); errList != nil {
-		return jsonValidationErrorResponse(ctx, errList)
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.loginUC.Execute(
@@ -74,30 +75,30 @@ func (h *LoginHandlers) loginAttempt(ctx echo.Context) error {
 
 		switch {
 		case errors.Is(err, domain.ErrInvalidCredentials):
-			return jsonUnauthorizedResponse(ctx, invalidCredentials, err.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, invalidCredentials, err.Error())
 		default:
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 	}
 
-	return jsonSuccessMessageResponse(ctx, verificationSentMessage)
+	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
 }
 
-func (h *LoginHandlers) verifyOtp(ctx echo.Context) error {
+func (h *loginHandlers) verifyOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
 		access, refresh, err := h.genAuthTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				return jsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
+				return echoRes.JsonUnauthorizedResponse(ctx, invalidOtp, domain.ErrInvalidOtp.Error())
 			}
 
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 
-		return jsonSuccessWithDataResponse(ctx, map[string]string{
+		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]string{
 			"access_token":  access,
 			"refresh_token": refresh,
 		})
@@ -106,20 +107,20 @@ func (h *LoginHandlers) verifyOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *LoginHandlers) resendOtp(ctx echo.Context) error {
+func (h *loginHandlers) resendOtp(ctx echo.Context) error {
 	handler := h.otpHandlers.resend(domain.LoginOTP)
 	return handler(ctx)
 }
 
-func (h *LoginHandlers) refreshToken(ctx echo.Context) error {
+func (h *loginHandlers) refreshToken(ctx echo.Context) error {
 	var data refreshFormData
 
 	if err := ctx.Bind(&data); err != nil {
-		return jsonInvalidRequestResponse(ctx)
+		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 
 	if data.Token == "" {
-		return jsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
+		return echoRes.JsonUnauthorizedResponse(ctx, invalidToken, domain.ErrInvalidToken.Error())
 	}
 
 	token, err := h.genAccessTokenFromRefreshUC.Execute(
@@ -130,26 +131,26 @@ func (h *LoginHandlers) refreshToken(ctx echo.Context) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrExpiredToken):
-			return jsonUnauthorizedResponse(ctx, expiredToken, err.Error())
+			return echoRes.JsonUnauthorizedResponse(ctx, expiredToken, err.Error())
 
 		case errors.Is(err, domain.ErrUserEmailTaken):
-			return jsonUnauthorizedResponse(
+			return echoRes.JsonUnauthorizedResponse(
 				ctx, invalidToken,
 				domain.ErrInvalidToken.Error(),
 			)
 
 		default:
 			h.logger.Error.Println(err)
-			return jsonInternalErrorResponse(ctx)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 	}
 
-	return jsonSuccessWithDataResponse(ctx, map[string]string{
+	return echoRes.JsonSuccessWithDataResponse(ctx, map[string]string{
 		"access_token": token,
 	})
 }
 
-func (h *LoginHandlers) RegisterRoutes(echo *echo.Echo) {
+func (h *loginHandlers) RegisterRoutes(echo *echo.Echo) {
 	groupRouter := echo.Group("/login")
 
 	groupRouter.POST("/", h.loginAttempt)

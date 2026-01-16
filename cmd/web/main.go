@@ -42,7 +42,6 @@ func main() {
 
 	// Register modules routes
 	authModule.RegisterRoutes(e)
-	
 
 	e.Logger.Fatal(e.Start(config.AppAddr))
 }
