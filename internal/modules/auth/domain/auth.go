@@ -207,7 +207,7 @@ type PasswordService interface {
 
 type JwtService interface {
 	GenerateToken(*AuthUser) (string, error)
-	ValidateToken(string) (jwt.Claims, error)
+	ValidateToken(string) (jwt.MapClaims, error)
 }
 
 type NotificationService interface {

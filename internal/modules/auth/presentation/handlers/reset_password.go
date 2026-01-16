@@ -138,8 +138,8 @@ func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
 	return echoRes.JsonSuccessMessageResponse(ctx, "Your password has been successfully updated.")
 }
 
-func (h *resetPasswordHandlers) RegisterRoutes(echo *echo.Echo) {
-	groupRouter := echo.Group("/reset_password")
+func (h *resetPasswordHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
+	groupRouter := echo.Group("/reset_password", m...)
 
 	groupRouter.POST("/", h.reset)
 	groupRouter.POST("/verify", h.verifyOtp)

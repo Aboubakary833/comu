@@ -114,8 +114,8 @@ func (h *registerHandlers) resendOtp(ctx echo.Context) error {
 	return handler(ctx)
 }
 
-func (h *registerHandlers) RegisterRoutes(echo *echo.Echo) {
-	groupRouter := echo.Group("/register")
+func (h *registerHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
+	groupRouter := echo.Group("/register", m...)
 
 	groupRouter.POST("/", h.register)
 	groupRouter.POST("/verify", h.verifyOtp)

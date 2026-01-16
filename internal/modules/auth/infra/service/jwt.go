@@ -44,7 +44,7 @@ func (service *jwtService) GenerateToken(user *domain.AuthUser) (string, error) 
 	return tokenString, nil
 }
 
-func (service *jwtService) ValidateToken(tokenString string) (jwt.Claims, error) {
+func (service *jwtService) ValidateToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, domain.ErrInvalidToken

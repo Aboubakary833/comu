@@ -8,7 +8,7 @@ import (
 )
 
 type Handlers interface {
-	RegisterRoutes(*echo.Echo)
+	RegisterRoutes(*echo.Echo, ...echo.MiddlewareFunc)
 }
 
 func GetHandlers(ucs application.UseCases, logger *logger.Log) []Handlers {

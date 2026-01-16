@@ -14,13 +14,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type authCtxKeyType string
-
-var AuthUserIdCtxKey = "userID"
+var (
+	AuthUserIdCtxKey = "userID"
+	AuthIsUserVerifiedCtxKey = "isUserVerified"
+)
 
 type PublicApi interface {
 	AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 	GuestMiddleware(next echo.HandlerFunc) echo.HandlerFunc
+	VerifiedMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 }
 
 type authModule struct {
@@ -63,7 +65,7 @@ func NewModule(
 		notificationService,
 	)
 
-	api := newApi(userService)
+	api := newApi(useCases.VerifyAccessToken)
 	handlers := handlers.GetHandlers(useCases, logger)
 
 	return &authModule{
@@ -74,7 +76,7 @@ func NewModule(
 
 func (module *authModule) RegisterRoutes(echo *echo.Echo) {
 	for _, h := range module.handlers {
-		h.RegisterRoutes(echo)
+		h.RegisterRoutes(echo, module.api.GuestMiddleware)
 	}
 }
 

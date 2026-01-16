@@ -150,8 +150,8 @@ func (h *loginHandlers) refreshToken(ctx echo.Context) error {
 	})
 }
 
-func (h *loginHandlers) RegisterRoutes(echo *echo.Echo) {
-	groupRouter := echo.Group("/login")
+func (h *loginHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
+	groupRouter := echo.Group("/login", m...)
 
 	groupRouter.POST("/", h.loginAttempt)
 	groupRouter.POST("/verify", h.verifyOtp)
