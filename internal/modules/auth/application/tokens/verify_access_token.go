@@ -10,23 +10,20 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type VerifyAccessTokenUC struct {
-	jwtService domain.JwtService
+	jwtService  domain.JwtService
 	userService domain.UserService
 }
-
 
 func NewVerifyAccessTokenUseCase(
 	jwtService domain.JwtService,
 	userService domain.UserService,
 ) *VerifyAccessTokenUC {
 	return &VerifyAccessTokenUC{
-		jwtService: jwtService,
+		jwtService:  jwtService,
 		userService: userService,
 	}
 }
-
 
 func (useCase *VerifyAccessTokenUC) Execute(ctx context.Context, token string) (*domain.AuthUser, error) {
 	claims, err := useCase.getClaimsFromToken(token)

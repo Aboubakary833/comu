@@ -15,23 +15,22 @@ type postHandlers struct {
 }
 
 func newPostHandlers(
-	listPostsUC  *posts.ListPostsUC,
-	readPostUC   *posts.ReadPostUC,
+	listPostsUC *posts.ListPostsUC,
+	readPostUC *posts.ReadPostUC,
 	createPostUC *posts.CreatePostUC,
 	updatePostUC *posts.UpdatePostUC,
 	deletePostUC *posts.DeletePostUC,
 ) *postHandlers {
 	return &postHandlers{
-		listPostsUC: listPostsUC,
-		readPostUC: readPostUC,
+		listPostsUC:  listPostsUC,
+		readPostUC:   readPostUC,
 		createPostUC: createPostUC,
 		updatePostUC: updatePostUC,
 		deletePostUC: deletePostUC,
 	}
 }
 
-
 func (h *postHandlers) list(ctx echo.Context) error {
-	
+
 	return nil
 }

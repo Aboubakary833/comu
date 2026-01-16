@@ -75,9 +75,9 @@ func TestVerifyAccessToken(t *testing.T) {
 		userID := uuid.New()
 		verifiedAt := time.Now().Add(2 * time.Hour * 24)
 		user := domain.AuthUser{
-			ID: userID,
-			Name: "John Doe",
-			Email: "johndoe@gmail.com",
+			ID:              userID,
+			Name:            "John Doe",
+			Email:           "johndoe@gmail.com",
 			EmailVerifiedAt: &verifiedAt,
 		}
 		expirationTime := time.Now().Add(time.Minute * 15)

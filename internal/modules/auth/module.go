@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	AuthUserIdCtxKey = "userID"
+	AuthUserIdCtxKey         = "userID"
 	AuthIsUserVerifiedCtxKey = "isUserVerified"
 )
 

@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	msgUnauthenticatedUser = "User is not authenticated"
+	msgUnauthenticatedUser    = "User is not authenticated"
 	msgAuthenticatedUserFound = "Authenticated user found"
-	msgUserIsNotVerified = "User email address is not verified"
+	msgUserIsNotVerified      = "User email address is not verified"
 )
 
 var (
-	notVerified		echoRes.ErrorResponseType = "unverified"
-	authenticated	echoRes.ErrorResponseType = "authenticated"
+	notVerified     echoRes.ErrorResponseType = "unverified"
+	authenticated   echoRes.ErrorResponseType = "authenticated"
 	unauthenticated echoRes.ErrorResponseType = "unauthenticated"
 )
 

@@ -19,7 +19,7 @@ type UseCases struct {
 	ResendOtpUC               *otp.ResendOtpUC
 	GenAuthTokenUC            *tokens.GenerateAuthTokensUC
 	GenResetTokenUC           *tokens.GenerateResetTokenUC
-	VerifyAccessToken		  *tokens.VerifyAccessTokenUC
+	VerifyAccessToken         *tokens.VerifyAccessTokenUC
 	GenAccessTokenFromRefresh *tokens.GenAccessTokenFromRefreshUC
 }
 
@@ -87,7 +87,7 @@ func InitUseCases(
 		ResendOtpUC:               resendOtpUC,
 		GenAuthTokenUC:            genAuthTokenUC,
 		GenResetTokenUC:           genResetTokenUC,
-		VerifyAccessToken: 		   verifyAccessTokenUC,
+		VerifyAccessToken:         verifyAccessTokenUC,
 		GenAccessTokenFromRefresh: genAccessFromTokenRefreshUC,
 	}
 }
