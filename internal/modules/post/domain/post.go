@@ -21,22 +21,22 @@ var (
 const DefaultPaginatorLimit = 10
 
 type Post struct {
-	ID        uuid.UUID	`json:"id"`
-	UserID    uuid.UUID	`json:"user_id"`
-	Title     string	`json:"title"`
-	Slug      string	`json:"slug"`
-	Content   string	`json:"content"`
-	CreatedAt time.Time	`json:"created_at"`
-	UpdatedAt time.Time	`json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Comment struct {
-	ID        uuid.UUID	`json:"id"`
-	PostID    uuid.UUID	`json:"post_id"`
-	UserID    uuid.UUID	`json:"user_id"`
-	Content   string	`json:"content"`
-	CreatedAt time.Time	`json:"created_at"`
-	UpdatedAt time.Time	`json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	PostID    uuid.UUID `json:"post_id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Cursor struct {

@@ -12,9 +12,9 @@ import (
 type ErrorResponseType string
 
 var (
-	badRequest    ErrorResponseType = "bad_request"
-	internalError ErrorResponseType = "internal_error"
-	forbidden	  ErrorResponseType = "forbidden"
+	badRequest        ErrorResponseType = "bad_request"
+	internalError     ErrorResponseType = "internal_error"
+	forbidden         ErrorResponseType = "forbidden"
 	ressourceNotFound ErrorResponseType = "ressource_not_found"
 )
 

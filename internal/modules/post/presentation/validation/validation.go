@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	msgPostIdRequired		  = "Post id is required"
+	msgPostIdRequired         = "Post id is required"
 	msgTitleRequired          = "Title is required"
 	msgContentRequired        = "Content required"
 	msgTitleTooShort          = "Title must be more than 4 charaters long"

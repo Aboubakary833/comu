@@ -104,9 +104,9 @@ func (h *commentHandlers) create(ctx echo.Context) error {
 		comment, err := h.createCommentUC.Execute(
 			ctx.Request().Context(),
 			comments.CreateCommentInput{
-				PostID: postID,
+				PostID:   postID,
 				AuthorID: authorID,
-				Content: validated.Content,
+				Content:  validated.Content,
 			},
 		)
 
