@@ -14,6 +14,8 @@ type ErrorResponseType string
 var (
 	badRequest    ErrorResponseType = "bad_request"
 	internalError ErrorResponseType = "internal_error"
+	forbidden	  ErrorResponseType = "forbidden"
+	ressourceNotFound ErrorResponseType = "ressource_not_found"
 )
 
 type ErrorResponse struct {
@@ -41,6 +43,14 @@ func JsonInternalErrorResponse(ctx echo.Context) error {
 
 func JsonUnauthorizedResponse(ctx echo.Context, errType ErrorResponseType, message string) error {
 	return JsonErrorMessageResponse(ctx, http.StatusUnauthorized, errType, message)
+}
+
+func JsonNotFoundResponse(ctx echo.Context, message string) error {
+	return JsonErrorMessageResponse(ctx, http.StatusNotFound, ressourceNotFound, message)
+}
+
+func JsonForbiddenResponse(ctx echo.Context, message string) error {
+	return JsonErrorMessageResponse(ctx, http.StatusForbidden, forbidden, message)
 }
 
 func JsonErrorMessageResponse(ctx echo.Context, statusCode int, errType ErrorResponseType, message string) error {

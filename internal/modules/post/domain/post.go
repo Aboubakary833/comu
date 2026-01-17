@@ -2,6 +2,8 @@ package domain
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -19,27 +21,36 @@ var (
 const DefaultPaginatorLimit = 10
 
 type Post struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Title     string
-	Slug      string
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID	`json:"id"`
+	UserID    uuid.UUID	`json:"user_id"`
+	Title     string	`json:"title"`
+	Slug      string	`json:"slug"`
+	Content   string	`json:"content"`
+	CreatedAt time.Time	`json:"created_at"`
+	UpdatedAt time.Time	`json:"updated_at"`
 }
 
 type Comment struct {
-	ID        uuid.UUID
-	PostID    uuid.UUID
-	UserID    uuid.UUID
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID	`json:"id"`
+	PostID    uuid.UUID	`json:"post_id"`
+	UserID    uuid.UUID	`json:"user_id"`
+	Content   string	`json:"content"`
+	CreatedAt time.Time	`json:"created_at"`
+	UpdatedAt time.Time	`json:"updated_at"`
 }
 
 type Cursor struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
+}
+
+func (c *Cursor) ToBase64() (string, error) {
+	rawBytes, err := json.Marshal(*c)
+
+	if err != nil {
+		return "", err
+	}
+	return base64.RawStdEncoding.EncodeToString(rawBytes), nil
 }
 
 type Paginator struct {
