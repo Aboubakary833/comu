@@ -51,7 +51,7 @@ func (repo *commentsRepository) ListAll(ctx context.Context, postID uuid.UUID) (
 	return repo.getCommentsFromRows(rows)
 }
 
-func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, error) {
+func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, paginator domain.Paginator) ([]domain.Comment, *domain.Cursor, error) {
 
 	if paginator.After == nil {
 		query := `
@@ -64,10 +64,10 @@ func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, pagi
 		rows, err := repo.db.QueryContext(ctx, query, postID.String(), paginator.Limit)
 
 		if err != nil {
-			return []domain.Comment{}, err
+			return []domain.Comment{}, nil, err
 		}
 
-		return repo.getCommentsFromRows(rows)
+		return repo.getListResult(rows)
 	}
 
 	query := `
@@ -88,10 +88,10 @@ func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, pagi
 	)
 
 	if err != nil {
-		return []domain.Comment{}, err
+		return []domain.Comment{}, nil, err
 	}
 
-	return repo.getCommentsFromRows(rows)
+	return repo.getListResult(rows)
 }
 
 func (repo *commentsRepository) Store(ctx context.Context, comment *domain.Comment) error {
@@ -144,4 +144,19 @@ func (repo *commentsRepository) getCommentsFromRows(rows *sql.Rows) ([]domain.Co
 	}
 
 	return comments, nil
+}
+
+func (repo *commentsRepository) getListResult(rows *sql.Rows) ([]domain.Comment, *domain.Cursor, error) {
+	comments, err := repo.getCommentsFromRows(rows)
+
+	if err != nil {
+		return comments, nil, err
+	}
+
+	if len(comments) <= 1 {
+		return comments, nil, nil
+	}
+	last := comments[len(comments)-1]
+
+	return comments, &domain.Cursor{ID: last.ID, CreatedAt: last.CreatedAt}, nil
 }

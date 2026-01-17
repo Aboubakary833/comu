@@ -40,7 +40,7 @@ func (repo *postsRepository) ListAll(ctx context.Context) ([]domain.Post, error)
 	return repo.getPostFromRows(rows)
 }
 
-func (repo *postsRepository) List(ctx context.Context, paginator domain.Paginator) ([]domain.Post, error) {
+func (repo *postsRepository) List(ctx context.Context, paginator domain.Paginator) ([]domain.Post, *domain.Cursor, error) {
 
 	if paginator.After == nil {
 		query := `
@@ -52,10 +52,10 @@ func (repo *postsRepository) List(ctx context.Context, paginator domain.Paginato
 		rows, err := repo.db.QueryContext(ctx, query, paginator.Limit)
 
 		if err != nil {
-			return []domain.Post{}, err
+			return []domain.Post{}, nil, err
 		}
 
-		return repo.getPostFromRows(rows)
+		return repo.getListResult(rows)
 	}
 
 	query := `
@@ -74,10 +74,10 @@ func (repo *postsRepository) List(ctx context.Context, paginator domain.Paginato
 	)
 
 	if err != nil {
-		return []domain.Post{}, err
+		return []domain.Post{}, nil, err
 	}
 
-	return repo.getPostFromRows(rows)
+	return repo.getListResult(rows)
 }
 
 func (repo *postsRepository) Store(ctx context.Context, post *domain.Post) error {
@@ -161,4 +161,19 @@ func (repo *postsRepository) getPostFromRows(rows *sql.Rows) ([]domain.Post, err
 	}
 
 	return posts, nil
+}
+
+func (repo *postsRepository) getListResult(rows *sql.Rows) ([]domain.Post, *domain.Cursor, error) {
+	posts, err := repo.getPostFromRows(rows)
+
+	if err != nil {
+		return posts, nil, err
+	}
+
+	if len(posts) <= 1 {
+		return posts, nil, nil
+	}
+	last := posts[len(posts)-1]
+
+	return posts, &domain.Cursor{ID: last.ID, CreatedAt: last.CreatedAt}, nil
 }

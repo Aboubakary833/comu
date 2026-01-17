@@ -3,6 +3,7 @@ package main
 import (
 	"comu/config"
 	"comu/internal/modules/auth"
+	"comu/internal/modules/post"
 	"comu/internal/modules/users"
 	"comu/internal/shared/logger"
 	"database/sql"
@@ -31,17 +32,19 @@ func main() {
 	// Initialize modules and inject db and logging dependencies
 	usersModule := users.NewModule(db)
 	authModule := auth.NewModule(db, config, usersModule.GetPublicApi(), logger)
+	postModule := post.NewModule(db, authModule.GetPublicApi(), logger)
 
 	e := echo.New()
 	e.Use(
-		middleware.RequestLogger(),
-		middleware.Recover(),
-		middleware.RemoveTrailingSlash(),
 		middleware.Secure(),
+		middleware.Recover(),
+		middleware.RequestLogger(),
+		middleware.RemoveTrailingSlash(),
 	)
 
 	// Register modules routes
 	authModule.RegisterRoutes(e)
+	postModule.RegisterRoutes(e)
 
 	e.Logger.Fatal(e.Start(config.AppAddr))
 }
