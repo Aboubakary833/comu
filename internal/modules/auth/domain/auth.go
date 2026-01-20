@@ -138,7 +138,7 @@ func NewResendOtpRequest(userEmail string) *ResendOtpRequest {
 
 func (req *ResendOtpRequest) CanOtpBeSent() bool {
 	coolTimeExpiration := req.LastSendAt.Add(time.Minute * 5)
-	return time.Now().Before(coolTimeExpiration)
+	return time.Now().After(coolTimeExpiration)
 }
 
 func (req *ResendOtpRequest) IsCountExceeded() bool {
@@ -186,9 +186,8 @@ type ResetTokensRepository interface {
 type ResendOtpRequestsRepository interface {
 	FindByID(context.Context, uuid.UUID) (*ResendOtpRequest, error)
 	FindByUserEmail(context.Context, string) (*ResendOtpRequest, error)
-	IncrementCount(context.Context, *ResendOtpRequest) error
+	Update(context.Context, *ResendOtpRequest) error
 	Store(context.Context, *ResendOtpRequest) error
-	CreateNew(ctx context.Context, userEmail string) error
 	Delete(context.Context, *ResendOtpRequest) error
 }
 

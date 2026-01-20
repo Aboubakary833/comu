@@ -7,11 +7,10 @@ import (
 )
 
 type LoginUC struct {
-	userService                 domain.UserService
-	otpCodeRepository           domain.OtpCodesRepository
-	notificationService         domain.NotificationService
-	passwordService             domain.PasswordService
-	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
+	userService         domain.UserService
+	otpCodeRepository   domain.OtpCodesRepository
+	notificationService domain.NotificationService
+	passwordService     domain.PasswordService
 }
 
 func NewUseCase(
@@ -19,14 +18,12 @@ func NewUseCase(
 	passwordService domain.PasswordService,
 	otpCodeRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
-	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
 ) *LoginUC {
 	return &LoginUC{
-		userService:                 userService,
-		passwordService:             passwordService,
-		otpCodeRepository:           otpCodeRepository,
-		notificationService:         notificationService,
-		resendOtpRequestsRepository: resendOtpRequestsRepository,
+		userService:         userService,
+		passwordService:     passwordService,
+		otpCodeRepository:   otpCodeRepository,
+		notificationService: notificationService,
 	}
 }
 
@@ -50,12 +47,13 @@ func (useCase *LoginUC) Execute(ctx context.Context, email, password string) err
 	if err != nil {
 		return err
 	}
-	err = useCase.resendOtpRequestsRepository.CreateNew(ctx, user.Email)
+
+	err = useCase.notificationService.SendOtpCodeMessage(otpCode)
 
 	if err != nil {
+		useCase.otpCodeRepository.Delete(ctx, otpCode)
 		return err
 	}
-	useCase.notificationService.SendOtpCodeMessage(otpCode)
 
 	return nil
 }

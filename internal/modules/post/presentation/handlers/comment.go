@@ -50,8 +50,8 @@ func (h *commentHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFu
 }
 
 type defaultCommentFormData struct {
-	PostID  string `json:"post_id"`
-	Content string `json:"content"`
+	PostID  string `form:"post_id" json:"post_id"`
+	Content string `form:"content" json:"content"`
 }
 
 func (h *commentHandlers) list(ctx echo.Context) error {
@@ -197,13 +197,13 @@ func (h *commentHandlers) delete(ctx echo.Context) error {
 
 func commentPreHandler(afterFunc func(authorID uuid.UUID, validated defaultCommentFormData) error) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		var data, validated defaultCommentFormData
+		var data defaultCommentFormData
 
 		if err := ctx.Bind(data); err != nil {
 			return echoRes.JsonInvalidRequestResponse(ctx)
 		}
 
-		if errList := validation.CommentValidator.Validate(data, &validated); errList != nil {
+		if errList := validation.CommentValidator.Validate(&data); errList != nil {
 			return echoRes.JsonValidationErrorResponse(ctx, errList)
 		}
 		id := ctx.Get(auth.AuthUserIdCtxKey).(string)
@@ -216,6 +216,6 @@ func commentPreHandler(afterFunc func(authorID uuid.UUID, validated defaultComme
 			)
 		}
 
-		return afterFunc(userID, validated)
+		return afterFunc(userID, data)
 	}
 }

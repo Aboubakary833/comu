@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"comu/internal/modules/auth/application/otp"
 	"comu/internal/modules/auth/application/register"
 	"comu/internal/modules/auth/application/tokens"
 	"comu/internal/modules/auth/domain"
@@ -20,6 +21,7 @@ type registerHandlers struct {
 	registerUC           *register.RegisterUC
 	genAuthTokenUC       *tokens.GenerateAuthTokensUC
 	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC
+	genResendRequestUC   *otp.GenResendOtpRequestUC
 
 	otpHandlers *otpHandlers
 	logger      *logger.Log
@@ -29,6 +31,7 @@ func newRegisterHandlers(
 	registerUC *register.RegisterUC,
 	genAuthTokenUC *tokens.GenerateAuthTokensUC,
 	markUserAsVerifiedUC *register.MarkUserAsVerifiedUC,
+	genResendRequestUC *otp.GenResendOtpRequestUC,
 
 	otpHandler *otpHandlers,
 	logger *logger.Log,
@@ -37,6 +40,7 @@ func newRegisterHandlers(
 		registerUC:           registerUC,
 		genAuthTokenUC:       genAuthTokenUC,
 		markUserAsVerifiedUC: markUserAsVerifiedUC,
+		genResendRequestUC:   genResendRequestUC,
 
 		otpHandlers: otpHandler,
 		logger:      logger,
@@ -44,18 +48,18 @@ func newRegisterHandlers(
 }
 
 type registerFormData struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `form:"name" json:"name"`
+	Email    string `form:"email" json:"email"`
+	Password string `form:"password" json:"password"`
 }
 
 func (h *registerHandlers) register(ctx echo.Context) error {
-	var data, validated registerFormData
+	var data registerFormData
 
 	if err := ctx.Bind(&data); err != nil {
 		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
-	errList := validation.RegisterValidator.Validate(data, &validated)
+	errList := validation.RegisterValidator.Validate(&data)
 
 	if errList != nil {
 		return echoRes.JsonValidationErrorResponse(ctx, errList)
@@ -63,7 +67,7 @@ func (h *registerHandlers) register(ctx echo.Context) error {
 
 	if err := h.registerUC.Execute(
 		ctx.Request().Context(),
-		validated.Name, validated.Email, validated.Password,
+		data.Name, data.Email, data.Password,
 	); err != nil {
 
 		if errors.Is(err, domain.ErrUserEmailTaken) {
@@ -74,11 +78,15 @@ func (h *registerHandlers) register(ctx echo.Context) error {
 		return echoRes.JsonInternalErrorResponse(ctx)
 	}
 
-	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
+	resendRequest, _ := h.genResendRequestUC.Execute(ctx.Request().Context(), data.Email)
+
+	return echoRes.JsonSuccessResponse(ctx, verificationSentMessage, map[string]string{
+		"resend_token": resendRequest.ID.String(),
+	})
 }
 
 func (h *registerHandlers) verifyOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
+	handler := h.otpHandlers.verify(domain.RegisterOTP, func(validated verifyOtpFormData) error {
 
 		if err := h.markUserAsVerifiedUC.Execute(ctx.Request().Context(), validated.Email); err != nil {
 			if errors.Is(err, domain.ErrUserEmailTaken) {
@@ -117,7 +125,7 @@ func (h *registerHandlers) resendOtp(ctx echo.Context) error {
 func (h *registerHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
 	groupRouter := echo.Group("/register", m...)
 
-	groupRouter.POST("/", h.register)
+	groupRouter.POST("", h.register)
 	groupRouter.POST("/verify", h.verifyOtp)
 	groupRouter.POST("/resend_otp", h.resendOtp)
 }

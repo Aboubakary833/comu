@@ -53,12 +53,12 @@ var RegisterValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 var NewPasswordValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 	"reset_token": zog.String().Required(zog.Message(msgTokenRequired)),
 	"password":    zog.String().Required(zog.Message(msgPasswordRequired)),
-	"password_confirmation": zog.String().Required(zog.Message(msgPasswordShouldBeConfirmed)).TestFunc(func(val *string, ctx internals.Ctx) bool {
+	"passwordConfirmation": zog.String().Required(zog.Message(msgPasswordShouldBeConfirmed)).TestFunc(func(val *string, ctx internals.Ctx) bool {
 		password, ok := ctx.Get("password").(string)
 		if !ok || *val == password {
 			ctx.AddIssue(&zog.ZogIssue{
 				Message: "Password and password confirmation don't match",
-				Path:    []string{"password_confirmation"},
+				Path:    []string{"passwordConfirmation"},
 				Value:   val,
 			})
 		}
@@ -78,6 +78,6 @@ var OtpCodeValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 }))
 
 var ResendOtpValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
-	"email":        zog.String().Required(zog.Message(msgEmailRequired)),
-	"resend_token": zog.String().Required(zog.Message(msgTokenRequired)),
+	"email":        zog.String().Required(zog.Message(msgEmailRequired)).Email(zog.Message(msgInvalidEmail)),
+	"resendToken": zog.String().Required(zog.Message(msgTokenRequired)),
 }))

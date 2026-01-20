@@ -17,6 +17,7 @@ type UseCases struct {
 	NewPasswordUC             *resetPassword.SetNewPasswordUC
 	VerifyOtpUC               *otp.VerifyOtpUC
 	ResendOtpUC               *otp.ResendOtpUC
+	GenResendRequestUC        *otp.GenResendOtpRequestUC
 	GenAuthTokenUC            *tokens.GenerateAuthTokensUC
 	GenResetTokenUC           *tokens.GenerateResetTokenUC
 	VerifyAccessToken         *tokens.VerifyAccessTokenUC
@@ -39,14 +40,12 @@ func InitUseCases(
 		passwordService,
 		otpCodesRepo,
 		notificationService,
-		resendRequestsRepo,
 	)
 	registerUC := register.NewRegisterUseCase(
 		userService,
 		passwordService,
 		otpCodesRepo,
 		notificationService,
-		resendRequestsRepo,
 	)
 
 	markUserAsVerifiedUC := register.NewMarkUserAsVerifiedUseCase(userService)
@@ -55,7 +54,6 @@ func InitUseCases(
 		userService,
 		otpCodesRepo,
 		notificationService,
-		resendRequestsRepo,
 	)
 
 	newPasswordUC := resetPassword.NewSetNewPasswordUseCase(
@@ -65,7 +63,8 @@ func InitUseCases(
 		resetTokensRepo,
 	)
 
-	verifyOtpUC := otp.NewVerifyOtpUseCase(otpCodesRepo)
+	verifyOtpUC := otp.NewVerifyOtpUseCase(otpCodesRepo, resendRequestsRepo)
+	genResendRequestUC := otp.NewGenResendRequestUseCase(resendRequestsRepo)
 	resendOtpUC := otp.NewResendOtpUseCase(
 		otpCodesRepo,
 		notificationService,
@@ -88,6 +87,7 @@ func InitUseCases(
 		GenAuthTokenUC:            genAuthTokenUC,
 		GenResetTokenUC:           genResetTokenUC,
 		VerifyAccessToken:         verifyAccessTokenUC,
+		GenResendRequestUC:        genResendRequestUC,
 		GenAccessTokenFromRefresh: genAccessFromTokenRefreshUC,
 	}
 }

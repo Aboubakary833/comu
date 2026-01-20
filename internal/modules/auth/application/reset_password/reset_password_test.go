@@ -17,14 +17,13 @@ func TestResetPasswordUseCase(t *testing.T) {
 		userService := mockService.NewUserServiceMock()
 		otpCodeRepository := mockRepository.NewOtpCodesRepositoryMock()
 		notificationService := mockService.NewNotificationServiceMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userEmail := "johndoe@gmail.com"
 
 		userService.On("GetUserByEmail", ctx, userEmail).Return(nil, domain.ErrUserNotFound).Once()
 
-		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
+		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService)
 
 		err := useCase.Execute(ctx, userEmail)
 
@@ -32,14 +31,12 @@ func TestResetPasswordUseCase(t *testing.T) {
 		userService.AssertExpectations(t)
 		otpCodeRepository.AssertNotCalled(t, "CreateWithUserEmail")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
-		resendOtpRequestsRepository.AssertNotCalled(t, "CreateNew")
 	})
 
 	t.Run("it should result into success and send reset code", func(t *testing.T) {
 		userService := mockService.NewUserServiceMock()
 		otpCodeRepository := mockRepository.NewOtpCodesRepositoryMock()
 		notificationService := mockService.NewNotificationServiceMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userEmail := "johndoe@gmail.com"
@@ -55,9 +52,8 @@ func TestResetPasswordUseCase(t *testing.T) {
 		userService.On("GetUserByEmail", ctx, userEmail).Return(user, nil).Once()
 		otpCodeRepository.On("CreateWithUserEmail", ctx, domain.ResetPasswordOTP, userEmail).Return(otpCode, nil).Once()
 		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
-		resendOtpRequestsRepository.On("CreateNew", ctx, userEmail).Return(nil).Once()
 
-		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService, resendOtpRequestsRepository)
+		useCase := NewResetPasswordUseCase(userService, otpCodeRepository, notificationService)
 
 		err := useCase.Execute(ctx, userEmail)
 

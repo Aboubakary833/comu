@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,11 +21,17 @@ func NewRepository(db *sql.DB) *repository {
 	}
 }
 
-func (repo *repository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
-	query := "SELECT * FROM users WHERE id = UUID_TO_BIN(?)"
+func (repo *repository) findQuery(ctx context.Context, column, value string) (*domain.User, error) {
+	queryVal := "?"
+
+	if column == "id" {
+		queryVal = "UUID_TO_BIN(?)"
+	}
+
+	query := fmt.Sprintf("SELECT * FROM users WHERE %s = %s", column, queryVal)
 	user := &domain.User{}
 
-	err := repo.db.QueryRowContext(ctx, query, ID).Scan(
+	err := repo.db.QueryRowContext(ctx, query, value).Scan(
 		&user.ID, &user.Name, &user.Email, &user.EmailVerifiedAt, &user.Avatar,
 		&user.Active, &user.Password, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
 	)
@@ -39,30 +46,12 @@ func (repo *repository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.Use
 	return user, nil
 }
 
+func (repo *repository) FindByID(ctx context.Context, ID uuid.UUID) (*domain.User, error) {
+	return repo.findQuery(ctx, "id", ID.String())
+}
+
 func (repo *repository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
-	query := `
-		SELECT 
-			id, name, email, email_verified_at, avatar,
-			active, password, created_at, updated_at, deleted_at
-		FROM users
-		WHERE id = UUID_TO_BIN(?)
-	`
-
-	user := &domain.User{}
-
-	err := repo.db.QueryRowContext(ctx, query, email).Scan(
-		&user.ID, &user.Name, &user.Email, &user.EmailVerifiedAt, &user.Avatar,
-		&user.Active, &user.Password, &user.CreatedAt, &user.UpdatedAt, &user.DeletedAt,
-	)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrUserNotFound
-		}
-		return nil, err
-	}
-
-	return user, nil
+	return repo.findQuery(ctx, "email", email)
 }
 
 func (repo *repository) Store(ctx context.Context, user *domain.User) error {
@@ -79,6 +68,8 @@ func (repo *repository) Store(ctx context.Context, user *domain.User) error {
 		return err
 	}
 	user.ID = id
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	_, err = repo.db.ExecContext(
 		ctx, query, user.ID, user.Name, user.Email, user.EmailVerifiedAt,
@@ -98,7 +89,7 @@ func (repo *repository) Update(ctx context.Context, user *domain.User) error {
 
 	_, err := repo.db.ExecContext(
 		ctx, query, user.Name, user.Email, user.EmailVerifiedAt,
-		user.Avatar, user.Active, user.Password, user.CreatedAt,
+		user.Avatar, user.Active, user.Password,
 		user.UpdatedAt, user.DeletedAt, user.ID,
 	)
 

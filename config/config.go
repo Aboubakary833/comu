@@ -45,6 +45,10 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 
+	if !strings.HasPrefix(config.AppAddr, ":") {
+		config.AppAddr = ":" + config.AppAddr
+	}
+
 	return &config, nil
 }
 
@@ -59,7 +63,7 @@ func setEnvDefaultVariables() {
 	viper.SetDefault("DB_SOURCE", "abubakr:root@/comu_db?parseTime=true")
 	viper.SetDefault("MAIL_HOST", "smtp.zoho.com")
 	viper.SetDefault("MAIL_PORT", "465")
-	viper.SetDefault("MAIL_FROM", "")
+	viper.SetDefault("MAIL_FROM", "norepy@comu.com")
 	viper.SetDefault("MAIL_USERNAME", "")
 	viper.SetDefault("MAIL_PASSWORD", "")
 }

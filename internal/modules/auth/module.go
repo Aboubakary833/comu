@@ -48,7 +48,9 @@ func NewModule(
 			Username: config.MailUserName,
 			Password: config.MailPassword,
 		},
+		config.AppEnv == "production" || config.AppEnv == "prod",
 	)
+	logger.Info.Println(config.MailPort)
 
 	if err != nil {
 		logger.Error.Fatalln(err)

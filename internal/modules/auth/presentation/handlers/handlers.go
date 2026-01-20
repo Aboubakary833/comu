@@ -14,16 +14,16 @@ type Handlers interface {
 func GetHandlers(ucs application.UseCases, logger *logger.Log) []Handlers {
 	otpHandlers := newOtpHandlers(ucs.VerifyOtpUC, ucs.ResendOtpUC, logger)
 	loginHandlers := newLoginHandlers(
-		ucs.LoginUC, ucs.GenAuthTokenUC,
+		ucs.LoginUC, ucs.GenAuthTokenUC, ucs.GenResendRequestUC,
 		ucs.GenAccessTokenFromRefresh, otpHandlers, logger,
 	)
 	registerHandlers := newRegisterHandlers(
-		ucs.RegisterUC, ucs.GenAuthTokenUC,
-		ucs.MarkUserAsVerifiedUC, otpHandlers, logger,
+		ucs.RegisterUC, ucs.GenAuthTokenUC, ucs.MarkUserAsVerifiedUC,
+		ucs.GenResendRequestUC, otpHandlers, logger,
 	)
 	resetPasswordHandlers := newResetPasswordHandlers(
-		ucs.NewPasswordUC, ucs.GenResetTokenUC,
-		ucs.ResetPasswordUC, otpHandlers, logger,
+		ucs.NewPasswordUC, ucs.GenResetTokenUC, ucs.ResetPasswordUC,
+		ucs.GenResendRequestUC, otpHandlers, logger,
 	)
 
 	return []Handlers{

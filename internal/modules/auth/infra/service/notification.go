@@ -17,11 +17,19 @@ type smtpNotificationService struct {
 	from   string
 }
 
-func NewSmtpNotificationService(host string, port int, mailFrom string, auth SmtpNotificationAuth) (*smtpNotificationService, error) {
-	client, err := mail.NewClient(
-		host, mail.WithPort(port), mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover), mail.WithSSL(),
-		mail.WithUsername(auth.Username), mail.WithPassword(auth.Password),
-	)
+func NewSmtpNotificationService(host string, port int, mailFrom string, auth SmtpNotificationAuth, enableTLS bool) (*smtpNotificationService, error) {
+	mailOptions := []mail.Option{
+		mail.WithPort(port),
+		mail.WithUsername(auth.Username),
+		mail.WithPassword(auth.Password),
+	}
+
+	// The default TLSPolicy is TLSMandatory
+	if !enableTLS {
+		mailOptions = append(mailOptions, mail.WithTLSPolicy(mail.NoTLS))
+	}
+
+	client, err := mail.NewClient(host, mailOptions...)
 
 	if err != nil {
 		return nil, err

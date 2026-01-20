@@ -4,6 +4,7 @@ import (
 	"comu/internal/modules/auth/domain"
 	"context"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -67,7 +68,9 @@ func (useCase *ResendOtpUC) Execute(ctx context.Context, input ResendOtpInput) e
 	if err != nil {
 		return err
 	}
+	req.Count += 1
+	req.LastSendAt = time.Now()
 
-	useCase.resendOtpRequestsRepository.IncrementCount(ctx, req)
+	useCase.resendOtpRequestsRepository.Update(ctx, req)
 	return useCase.notificationService.SendOtpCodeMessage(otpCode)
 }

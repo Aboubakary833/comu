@@ -19,7 +19,6 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService := mockService.NewPasswordServiceMock()
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userEmail := "johndoe@gmail.com"
@@ -39,14 +38,12 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService.On("Compare", hashedPassword, userPassword).Return(nil).Once()
 		otpCodesRepository.On("CreateWithUserEmail", ctx, domain.LoginOTP, userEmail).Return(otpCode, nil).Once()
 		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
-		resendOtpRequestsRepository.On("CreateNew", ctx, userEmail).Return(nil).Once()
 
 		useCase := NewUseCase(
 			userService,
 			passwordService,
 			otpCodesRepository,
 			notificationService,
-			resendOtpRequestsRepository,
 		)
 
 		err := useCase.Execute(ctx, userEmail, userPassword)
@@ -56,7 +53,6 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService.AssertExpectations(t)
 		otpCodesRepository.AssertExpectations(t)
 		notificationService.AssertExpectations(t)
-		resendOtpRequestsRepository.AssertExpectations(t)
 	})
 
 	t.Run("it should fail and return ErrInvalidCredentials when user not found", func(t *testing.T) {
@@ -64,7 +60,6 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService := mockService.NewPasswordServiceMock()
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userEmail := "johndoe@gmail.com"
@@ -77,7 +72,6 @@ func TestLoginUseCase(t *testing.T) {
 			passwordService,
 			otpCodesRepository,
 			notificationService,
-			resendOtpRequestsRepository,
 		)
 
 		err := useCase.Execute(ctx, userEmail, userPassword)
@@ -87,7 +81,6 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService.AssertNotCalled(t, "Compare")
 		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
-		resendOtpRequestsRepository.AssertNotCalled(t, "CreateNew")
 	})
 
 	t.Run("it should fail and return ErrInvalidCredentials when passwords don't match", func(t *testing.T) {
@@ -95,7 +88,6 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService := mockService.NewPasswordServiceMock()
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userEmail := "johndoe@gmail.com"
@@ -117,7 +109,6 @@ func TestLoginUseCase(t *testing.T) {
 			passwordService,
 			otpCodesRepository,
 			notificationService,
-			resendOtpRequestsRepository,
 		)
 
 		err := useCase.Execute(ctx, userEmail, userPassword)
@@ -127,6 +118,5 @@ func TestLoginUseCase(t *testing.T) {
 		passwordService.AssertExpectations(t)
 		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
-		resendOtpRequestsRepository.AssertNotCalled(t, "CreateNew")
 	})
 }

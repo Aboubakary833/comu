@@ -61,8 +61,8 @@ func (h *postHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc)
 }
 
 type postFormData struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title   string `form:"title" json:"title"`
+	Content string `form:"content" json:"content"`
 }
 
 func (h *postHandlers) list(ctx echo.Context) error {
@@ -222,13 +222,13 @@ func (h *postHandlers) delete(ctx echo.Context) error {
 
 func postPreHandler(afterFunc func(validated postFormData, userID uuid.UUID) error) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		var data, validated postFormData
+		var data postFormData
 
 		if err := ctx.Bind(data); err != nil {
 			return echoRes.JsonInvalidRequestResponse(ctx)
 		}
 
-		if errList := validation.PostValidator.Validate(data, &validated); errList != nil {
+		if errList := validation.PostValidator.Validate(&data); errList != nil {
 			return echoRes.JsonValidationErrorResponse(ctx, errList)
 		}
 		id := ctx.Get(auth.AuthUserIdCtxKey).(string)
@@ -241,7 +241,7 @@ func postPreHandler(afterFunc func(validated postFormData, userID uuid.UUID) err
 			)
 		}
 
-		return afterFunc(validated, userID)
+		return afterFunc(data, userID)
 	}
 }
 

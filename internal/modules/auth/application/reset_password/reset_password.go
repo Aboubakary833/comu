@@ -6,29 +6,26 @@ import (
 )
 
 type ResetPasswordUC struct {
-	userService                 domain.UserService
-	otpCodesRepository          domain.OtpCodesRepository
-	notificationService         domain.NotificationService
-	resendOtpRequestsRepository domain.ResendOtpRequestsRepository
+	userService         domain.UserService
+	otpCodesRepository  domain.OtpCodesRepository
+	notificationService domain.NotificationService
 }
 
 func NewResetPasswordUseCase(
 	userService domain.UserService,
 	otpCodesRepository domain.OtpCodesRepository,
 	notificationService domain.NotificationService,
-	resendOtpRequestsRepository domain.ResendOtpRequestsRepository,
 ) *ResetPasswordUC {
 	return &ResetPasswordUC{
-		userService:                 userService,
-		otpCodesRepository:          otpCodesRepository,
-		notificationService:         notificationService,
-		resendOtpRequestsRepository: resendOtpRequestsRepository,
+		userService:         userService,
+		otpCodesRepository:  otpCodesRepository,
+		notificationService: notificationService,
 	}
 }
 
 func (useCase *ResetPasswordUC) Execute(ctx context.Context, userEmail string) error {
-
 	_, err := useCase.userService.GetUserByEmail(ctx, userEmail)
+
 	if err != nil {
 		return err
 	}
@@ -38,11 +35,13 @@ func (useCase *ResetPasswordUC) Execute(ctx context.Context, userEmail string) e
 	if err != nil {
 		return err
 	}
-	err = useCase.resendOtpRequestsRepository.CreateNew(ctx, userEmail)
+
+	err = useCase.notificationService.SendOtpCodeMessage(otpCode)
 
 	if err != nil {
+		useCase.otpCodesRepository.Delete(ctx, otpCode)
 		return err
 	}
 
-	return useCase.notificationService.SendOtpCodeMessage(otpCode)
+	return nil
 }

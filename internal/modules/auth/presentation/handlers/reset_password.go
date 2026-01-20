@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"comu/internal/modules/auth/application/otp"
 	resetPassword "comu/internal/modules/auth/application/reset_password"
 	"comu/internal/modules/auth/application/tokens"
 	"comu/internal/modules/auth/domain"
@@ -13,9 +14,10 @@ import (
 )
 
 type resetPasswordHandlers struct {
-	newPasswordUC   *resetPassword.SetNewPasswordUC
-	genResetTokenUC *tokens.GenerateResetTokenUC
-	resetPasswordUC *resetPassword.ResetPasswordUC
+	newPasswordUC      *resetPassword.SetNewPasswordUC
+	genResetTokenUC    *tokens.GenerateResetTokenUC
+	resetPasswordUC    *resetPassword.ResetPasswordUC
+	genResendRequestUC *otp.GenResendOtpRequestUC
 
 	otpHandlers *otpHandlers
 	logger      *logger.Log
@@ -25,14 +27,16 @@ func newResetPasswordHandlers(
 	newPasswordUC *resetPassword.SetNewPasswordUC,
 	genResetTokenUC *tokens.GenerateResetTokenUC,
 	resetPasswordUC *resetPassword.ResetPasswordUC,
+	genResendRequestUC *otp.GenResendOtpRequestUC,
 
 	otpHandlers *otpHandlers,
 	logger *logger.Log,
 ) *resetPasswordHandlers {
 	return &resetPasswordHandlers{
-		newPasswordUC:   newPasswordUC,
-		genResetTokenUC: genResetTokenUC,
-		resetPasswordUC: resetPasswordUC,
+		newPasswordUC:      newPasswordUC,
+		genResetTokenUC:    genResetTokenUC,
+		resetPasswordUC:    resetPasswordUC,
+		genResendRequestUC: genResendRequestUC,
 
 		otpHandlers: otpHandlers,
 		logger:      logger,
@@ -40,29 +44,29 @@ func newResetPasswordHandlers(
 }
 
 type resetPasswordFormData struct {
-	Email string `json:"email"`
+	Email string `form:"email" json:"email"`
 }
 
 type newPasswordFormData struct {
-	ResetToken           string `json:"reset_token"`
-	Password             string `json:"password"`
-	PasswordConfirmation string `json:"password_confirmation"`
+	ResetToken           string `form:"reset_token" json:"reset_token"`
+	Password             string `form:"password" json:"password"`
+	PasswordConfirmation string `form:"password_confirmation" json:"password_confirmation"`
 }
 
 func (h *resetPasswordHandlers) reset(ctx echo.Context) error {
-	var data, validated resetPasswordFormData
+	var data resetPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
 		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
-	errList := validation.ResetPasswordValidator.Validate(data, &validated)
+	errList := validation.ResetPasswordValidator.Validate(&data)
 
 	if errList != nil {
 		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.resetPasswordUC.Execute(
-		ctx.Request().Context(), validated.Email,
+		ctx.Request().Context(), data.Email,
 	); err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
@@ -72,7 +76,11 @@ func (h *resetPasswordHandlers) reset(ctx echo.Context) error {
 		return echoRes.JsonInternalErrorResponse(ctx)
 	}
 
-	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
+	resendRequest, _ := h.genResendRequestUC.Execute(ctx.Request().Context(), data.Email)
+
+	return echoRes.JsonSuccessResponse(ctx, verificationSentMessage, map[string]string{
+		"resend_token": resendRequest.ID.String(),
+	})
 }
 
 func (h *resetPasswordHandlers) verifyOtp(ctx echo.Context) error {
@@ -104,12 +112,12 @@ func (h *resetPasswordHandlers) resendOtp(ctx echo.Context) error {
 }
 
 func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
-	var data, validated newPasswordFormData
+	var data newPasswordFormData
 
 	if err := ctx.Bind(&data); err != nil {
 		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
-	errList := validation.NewPasswordValidator.Validate(data, &validated)
+	errList := validation.NewPasswordValidator.Validate(&data)
 
 	if errList != nil {
 		return echoRes.JsonValidationErrorResponse(ctx, errList)
@@ -117,8 +125,8 @@ func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
 
 	if err := h.newPasswordUC.Execute(
 		ctx.Request().Context(),
-		validated.ResetToken,
-		validated.Password,
+		data.ResetToken,
+		data.Password,
 	); err != nil {
 		switch {
 		case errors.Is(err, domain.ErrInvalidToken):

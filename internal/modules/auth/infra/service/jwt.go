@@ -34,7 +34,7 @@ func (service *jwtService) GenerateToken(user *domain.AuthUser) (string, error) 
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(service.secret)
+	tokenString, err := token.SignedString([]byte(service.secret))
 
 	if err != nil {
 		service.logger.Error.Println(err)
@@ -50,7 +50,7 @@ func (service *jwtService) ValidateToken(tokenString string) (jwt.MapClaims, err
 			return nil, domain.ErrInvalidToken
 		}
 
-		return service.secret, nil
+		return []byte(service.secret), nil
 	})
 
 	if err != nil {

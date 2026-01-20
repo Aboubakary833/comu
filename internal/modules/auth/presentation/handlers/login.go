@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"comu/internal/modules/auth/application/login"
+	"comu/internal/modules/auth/application/otp"
 	"comu/internal/modules/auth/application/tokens"
 	"comu/internal/modules/auth/domain"
 	"comu/internal/modules/auth/presentation/validation"
@@ -23,6 +24,7 @@ var (
 type loginHandlers struct {
 	loginUC                     *login.LoginUC
 	genAuthTokenUC              *tokens.GenerateAuthTokensUC
+	genResendRequestUC          *otp.GenResendOtpRequestUC
 	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC
 
 	otpHandlers *otpHandlers
@@ -32,6 +34,7 @@ type loginHandlers struct {
 func newLoginHandlers(
 	loginUC *login.LoginUC,
 	genAuthTokenUC *tokens.GenerateAuthTokensUC,
+	genResendRequestUC *otp.GenResendOtpRequestUC,
 	genAccessTokenFromRefreshUC *tokens.GenAccessTokenFromRefreshUC,
 
 	otpHandler *otpHandlers,
@@ -40,6 +43,7 @@ func newLoginHandlers(
 	return &loginHandlers{
 		loginUC:                     loginUC,
 		genAuthTokenUC:              genAuthTokenUC,
+		genResendRequestUC:          genResendRequestUC,
 		genAccessTokenFromRefreshUC: genAccessTokenFromRefreshUC,
 
 		otpHandlers: otpHandler,
@@ -48,29 +52,29 @@ func newLoginHandlers(
 }
 
 type loginFormData struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `form:"email" json:"email"`
+	Password string `form:"password" json:"password"`
 }
 
 type refreshFormData struct {
-	Token string `json:"refresh_token"`
+	Token string `form:"refresh_token" json:"refresh_token"`
 }
 
 func (h *loginHandlers) loginAttempt(ctx echo.Context) error {
-	var data, validated loginFormData
+	var data loginFormData
 
 	if err := ctx.Bind(&data); err != nil {
 		return echoRes.JsonInvalidRequestResponse(ctx)
 	}
 
-	if errList := validation.LoginValidator.Validate(data, &validated); errList != nil {
+	if errList := validation.LoginValidator.Validate(&data); errList != nil {
 		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
 	if err := h.loginUC.Execute(
 		ctx.Request().Context(),
-		validated.Email,
-		validated.Password,
+		data.Email,
+		data.Password,
 	); err != nil {
 
 		switch {
@@ -82,7 +86,11 @@ func (h *loginHandlers) loginAttempt(ctx echo.Context) error {
 		}
 	}
 
-	return echoRes.JsonSuccessMessageResponse(ctx, verificationSentMessage)
+	resendRequest, _ := h.genResendRequestUC.Execute(ctx.Request().Context(), data.Email)
+
+	return echoRes.JsonSuccessResponse(ctx, verificationSentMessage, map[string]string{
+		"resend_token": resendRequest.ID.String(),
+	})
 }
 
 func (h *loginHandlers) verifyOtp(ctx echo.Context) error {

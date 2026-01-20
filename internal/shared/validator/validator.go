@@ -14,8 +14,8 @@ func NewStructValidator(zogStruct *zog.StructSchema) *StructValidator {
 	}
 }
 
-func (validator *StructValidator) Validate(data, destPtr any, opt ...zog.ExecOption) SchemaValidationErrors {
-	errList := validator.schema.Parse(data, destPtr, opt...)
+func (validator *StructValidator) Validate(dataPtr any, opt ...zog.ExecOption) SchemaValidationErrors {
+	errList := validator.schema.Validate(dataPtr, opt...)
 
 	if errList != nil {
 		var errors = make(SchemaValidationErrors)

@@ -36,15 +36,10 @@ func (repoMock *resendOtpRequestsRepository) FindByUserEmail(ctx context.Context
 	return args.Get(0).(*domain.ResendOtpRequest), nil
 }
 
-func (repoMock *resendOtpRequestsRepository) IncrementCount(ctx context.Context, req *domain.ResendOtpRequest) error {
+func (repoMock *resendOtpRequestsRepository) Update(ctx context.Context, req *domain.ResendOtpRequest) error {
 	args := repoMock.Called(ctx, req)
 	req.Count += 1
 
-	return args.Error(0)
-}
-
-func (repoMock *resendOtpRequestsRepository) CreateNew(ctx context.Context, userEmail string) error {
-	args := repoMock.Called(ctx, userEmail)
 	return args.Error(0)
 }
 

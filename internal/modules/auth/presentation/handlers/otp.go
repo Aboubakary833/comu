@@ -41,33 +41,33 @@ func newOtpHandlers(
 }
 
 type verifyOtpFormData struct {
-	Email string `json:"email"`
-	Code  string `json:"code"`
+	Email string `form:"email" json:"email"`
+	Code  string `form:"code" json:"code"`
 }
 
 type resendOtpFormData struct {
-	Email       string `json:"email"`
-	ResendToken string `json:"resend_token"`
+	Email       string `form:"email" json:"email"`
+	ResendToken string `form:"resend_token" json:"resend_token"`
 }
 
 func (h *otpHandlers) verify(otpType domain.OtpType, afterFunc func(verifyOtpFormData) error) echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
-		var data, validated verifyOtpFormData
+		var data verifyOtpFormData
 
 		if err := ctx.Bind(&data); err != nil {
 			return echoRes.JsonInvalidRequestResponse(ctx)
 		}
 
-		if errList := validation.OtpCodeValidator.Validate(data, &validated); errList != nil {
+		if errList := validation.OtpCodeValidator.Validate(&data); errList != nil {
 			return echoRes.JsonValidationErrorResponse(ctx, errList)
 		}
 
 		if err := h.verifyOtpUC.Execute(
 			ctx.Request().Context(), otp.VerifyOtpInput{
-				UserEmail:    validated.Email,
+				UserEmail:    data.Email,
 				OtpCodeType:  otpType,
-				OtpCodeValue: validated.Code,
+				OtpCodeValue: data.Code,
 			},
 		); err != nil {
 
@@ -82,7 +82,7 @@ func (h *otpHandlers) verify(otpType domain.OtpType, afterFunc func(verifyOtpFor
 			}
 		}
 
-		return afterFunc(validated)
+		return afterFunc(data)
 	}
 
 }
@@ -90,17 +90,18 @@ func (h *otpHandlers) verify(otpType domain.OtpType, afterFunc func(verifyOtpFor
 func (h *otpHandlers) resend(otpType domain.OtpType) echo.HandlerFunc {
 
 	return func(ctx echo.Context) error {
-		var data, validated resendOtpFormData
+		var data resendOtpFormData
 
 		if err := ctx.Bind(&data); err != nil {
 			return echoRes.JsonInvalidRequestResponse(ctx)
 		}
 
-		if errList := validation.ResendOtpValidator.Validate(data, &validated); errList != nil {
+		h.logger.Info.Println(data)
+		if errList := validation.ResendOtpValidator.Validate(&data); errList != nil {
 			return echoRes.JsonValidationErrorResponse(ctx, errList)
 		}
 
-		id, err := uuid.Parse(validated.ResendToken)
+		id, err := uuid.Parse(data.ResendToken)
 
 		if err != nil {
 			return echoRes.JsonUnauthorizedResponse(
@@ -112,12 +113,19 @@ func (h *otpHandlers) resend(otpType domain.OtpType) echo.HandlerFunc {
 		if err := h.resendOtpUC.Execute(
 			ctx.Request().Context(), otp.ResendOtpInput{
 				ID:          id,
-				UserEmail:   validated.Email,
+				UserEmail:   data.Email,
 				OtpCodeType: otpType,
 			},
 		); err != nil {
 
 			switch {
+
+			case errors.Is(err, domain.ErrResendRequestNotFound):
+				return echoRes.JsonUnauthorizedResponse(
+					ctx, invalidResendRequest,
+					domain.ErrInvalidResendRequest.Error(),
+				)
+
 			case errors.Is(err, domain.ErrInvalidResendRequest):
 				return echoRes.JsonUnauthorizedResponse(ctx, invalidResendRequest, err.Error())
 

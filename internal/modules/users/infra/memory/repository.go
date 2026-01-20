@@ -67,9 +67,8 @@ func (repo *inMemoryRepository) Store(ctx context.Context, user *domain.User) er
 	}
 	user.ID = id
 
-	now := time.Now()
-	user.CreatedAt = now
-	user.UpdatedAt = now
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	repo.users[id] = *user
 

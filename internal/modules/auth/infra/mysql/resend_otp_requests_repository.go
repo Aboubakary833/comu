@@ -68,11 +68,6 @@ func (repo *resendOtpRequestsRepository) Store(ctx context.Context, req *domain.
 	return err
 }
 
-func (repo *resendOtpRequestsRepository) CreateNew(ctx context.Context, userEmail string) error {
-	req := domain.NewResendOtpRequest(userEmail)
-	return repo.Store(ctx, req)
-}
-
 func (repo *resendOtpRequestsRepository) Delete(ctx context.Context, req *domain.ResendOtpRequest) error {
 	query := "DELETE FROM resend_otp_requests WHERE id = UUID_TO_BIN(?)"
 	_, err := repo.db.ExecContext(ctx, query, req.ID.String())
@@ -80,11 +75,10 @@ func (repo *resendOtpRequestsRepository) Delete(ctx context.Context, req *domain
 	return err
 }
 
-func (repo *resendOtpRequestsRepository) IncrementCount(ctx context.Context, req *domain.ResendOtpRequest) error {
-	query := "UPDATE resend_otp_requests SET count = ? WHERE id = UUID_TO_BIN(?)"
-	req.Count += 1
-
-	_, err := repo.db.ExecContext(ctx, query, req.Count, req.ID.String())
+func (repo *resendOtpRequestsRepository) Update(ctx context.Context, req *domain.ResendOtpRequest) error {
+	query := "UPDATE resend_otp_requests SET count = ?, last_sent_at = ? WHERE id = UUID_TO_BIN(?)"
+	_, err := repo.db.ExecContext(ctx, query, req.Count, req.LastSendAt, req.ID.String())
 
 	return err
 }
+

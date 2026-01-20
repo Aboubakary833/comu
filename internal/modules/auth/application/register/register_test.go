@@ -19,7 +19,6 @@ func TestRegister(t *testing.T) {
 		passwordService := mockService.NewPasswordServiceMock()
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userName := "John Doe"
@@ -33,14 +32,12 @@ func TestRegister(t *testing.T) {
 		userService.On("CreateNewUser", ctx, userName, userEmail, hashedPassword).Return(uuid.New(), nil).Once()
 		otpCodesRepository.On("CreateWithUserEmail", ctx, domain.RegisterOTP, userEmail).Return(otpCode, nil).Once()
 		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
-		resendOtpRequestsRepository.On("CreateNew", ctx, userEmail).Return(nil).Once()
 
 		useCase := NewRegisterUseCase(
 			userService,
 			passwordService,
 			otpCodesRepository,
 			notificationService,
-			resendOtpRequestsRepository,
 		)
 
 		err := useCase.Execute(ctx, userName, userEmail, userPassword)
@@ -50,7 +47,6 @@ func TestRegister(t *testing.T) {
 		userService.AssertExpectations(t)
 		otpCodesRepository.AssertExpectations(t)
 		notificationService.AssertExpectations(t)
-		resendOtpRequestsRepository.AssertExpectations(t)
 	})
 
 	t.Run("it should fail and return email taken error", func(t *testing.T) {
@@ -58,7 +54,6 @@ func TestRegister(t *testing.T) {
 		passwordService := mockService.NewPasswordServiceMock()
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
-		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
 		ctx := context.Background()
 
 		userName := "John Doe"
@@ -74,7 +69,6 @@ func TestRegister(t *testing.T) {
 			passwordService,
 			otpCodesRepository,
 			notificationService,
-			resendOtpRequestsRepository,
 		)
 
 		err := useCase.Execute(ctx, userName, userEmail, userPassword)
@@ -84,6 +78,5 @@ func TestRegister(t *testing.T) {
 		userService.AssertExpectations(t)
 		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
-		resendOtpRequestsRepository.AssertNotCalled(t, "CreateNew")
 	})
 }

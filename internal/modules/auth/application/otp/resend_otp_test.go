@@ -74,6 +74,9 @@ func TestResendOtpUseCase(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrInvalidResendRequest)
 		resendOtpRequestsRepository.AssertExpectations(t)
 		otpCodesRepository.AssertExpectations(t)
+		otpCodesRepository.AssertNotCalled(t, "Delete")
+		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
+		resendOtpRequestsRepository.AssertNotCalled(t, "Update")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
 	})
 
@@ -107,6 +110,9 @@ func TestResendOtpUseCase(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrInvalidResendRequest)
 		resendOtpRequestsRepository.AssertExpectations(t)
 		otpCodesRepository.AssertExpectations(t)
+		otpCodesRepository.AssertNotCalled(t, "Delete")
+		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
+		resendOtpRequestsRepository.AssertNotCalled(t, "Update")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
 	})
 
@@ -119,7 +125,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		userEmail := "johndoe@gmail.com"
 		otpCode := domain.NewOtpCode(domain.LoginOTP, userEmail, domain.DefaultOtpCodeTTL)
 		req := domain.NewResendOtpRequest(userEmail)
-		req.LastSendAt = time.Now().Add(-6 * time.Minute)
+		req.LastSendAt = time.Now().Add(time.Minute * 5)
 
 		resendOtpRequestsRepository.On("FindByID", ctx, req.ID).Return(req, nil).Once()
 		otpCodesRepository.On("FindByUserEmail", ctx, userEmail).Return(otpCode, nil).Once()
@@ -141,7 +147,90 @@ func TestResendOtpUseCase(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrResendRequestCantBeProcessed)
 		resendOtpRequestsRepository.AssertExpectations(t)
 		otpCodesRepository.AssertExpectations(t)
+		otpCodesRepository.AssertNotCalled(t, "Delete")
+		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
+		resendOtpRequestsRepository.AssertNotCalled(t, "Update")
 	})
 
+	t.Run("it should return ErrResendRequestCountExceeded", func(t *testing.T) {
+		notificationService := mockService.NewNotificationServiceMock()
+		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
+		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
+		ctx := context.Background()
+
+		userEmail := "johndoe@gmail.com"
+		otpCode := domain.NewOtpCode(domain.LoginOTP, userEmail, domain.DefaultOtpCodeTTL)
+		req := domain.NewResendOtpRequest(userEmail)
+		req.Count = 5
+		req.LastSendAt = time.Now().Add(-5 * time.Minute)
+
+		resendOtpRequestsRepository.On("FindByID", ctx, req.ID).Return(req, nil).Once()
+		otpCodesRepository.On("FindByUserEmail", ctx, userEmail).Return(otpCode, nil).Once()
+
+		useCase := NewResendOtpUseCase(
+			otpCodesRepository,
+			notificationService,
+			resendOtpRequestsRepository,
+		)
+
+		err := useCase.Execute(
+			ctx, ResendOtpInput{
+				ID:          req.ID,
+				UserEmail:   userEmail,
+				OtpCodeType: domain.LoginOTP,
+			},
+		)
+
+		assert.ErrorIs(t, err, domain.ErrResendRequestCountExceeded)
+		resendOtpRequestsRepository.AssertExpectations(t)
+		otpCodesRepository.AssertExpectations(t)
+		otpCodesRepository.AssertNotCalled(t, "Delete")
+		otpCodesRepository.AssertNotCalled(t, "CreateWithUserEmail")
+		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
+		resendOtpRequestsRepository.AssertNotCalled(t, "Update")
+	})
+	
+	t.Run("it should succeed", func(t *testing.T) {
+		notificationService := mockService.NewNotificationServiceMock()
+		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()
+		resendOtpRequestsRepository := mockRepository.NewResendOtpRequestsRepositoryMock()
+		ctx := context.Background()
+		_assert := assert.New(t)
+
+		userEmail := "johndoe@gmail.com"
+		otpCode := domain.NewOtpCode(domain.LoginOTP, userEmail, domain.DefaultOtpCodeTTL)
+		req := domain.NewResendOtpRequest(userEmail)
+		req.LastSendAt = time.Now().Add(-5 * time.Minute)
+
+		resendOtpRequestsRepository.On("FindByID", ctx, req.ID).Return(req, nil).Once()
+		resendOtpRequestsRepository.On("Update", ctx, req).Return(nil).Once()
+		otpCodesRepository.On("FindByUserEmail", ctx, userEmail).Return(otpCode, nil).Once()
+		otpCodesRepository.On("Delete", ctx, otpCode).Return(nil)
+		otpCodesRepository.On("CreateWithUserEmail", ctx, otpCode.Type, otpCode.UserEmail).Return(otpCode, nil)
+		notificationService.On("SendOtpCodeMessage", otpCode).Return(nil).Once()
+
+		useCase := NewResendOtpUseCase(
+			otpCodesRepository,
+			notificationService,
+			resendOtpRequestsRepository,
+		)
+
+		err := useCase.Execute(
+			ctx, ResendOtpInput{
+				ID:          req.ID,
+				UserEmail:   userEmail,
+				OtpCodeType: domain.LoginOTP,
+			},
+		)
+
+		if _assert.NoError(err) {
+			resendOtpRequestsRepository.AssertExpectations(t)
+			otpCodesRepository.AssertExpectations(t)
+			notificationService.AssertExpectations(t)
+
+			_assert.Equal(2, req.Count)
+			_assert.Equal(false, req.CanOtpBeSent())
+		}
+	})
 }

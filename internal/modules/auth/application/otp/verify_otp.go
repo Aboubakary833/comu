@@ -14,11 +14,16 @@ type VerifyOtpInput struct {
 
 type VerifyOtpUC struct {
 	otpCodesRepository domain.OtpCodesRepository
+	resendRequestsRepository domain.ResendOtpRequestsRepository
 }
 
-func NewVerifyOtpUseCase(otpCodesRepository domain.OtpCodesRepository) *VerifyOtpUC {
+func NewVerifyOtpUseCase(
+	otpCodesRepository domain.OtpCodesRepository,
+	resendRequestsRepository domain.ResendOtpRequestsRepository,
+	) *VerifyOtpUC {
 	return &VerifyOtpUC{
 		otpCodesRepository: otpCodesRepository,
+		resendRequestsRepository: resendRequestsRepository,
 	}
 }
 
@@ -43,6 +48,11 @@ func (useCase *VerifyOtpUC) Execute(ctx context.Context, input VerifyOtpInput) e
 	if otpCode.Expired() {
 		useCase.otpCodesRepository.Delete(ctx, otpCode)
 		return domain.ErrExpiredOtp
+	}
+
+	resendReq, _ := useCase.resendRequestsRepository.FindByUserEmail(ctx, otpCode.UserEmail)
+	if resendReq != nil {
+		useCase.resendRequestsRepository.Delete(ctx, resendReq)
 	}
 	useCase.otpCodesRepository.Delete(ctx, otpCode)
 
