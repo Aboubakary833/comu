@@ -1,6 +1,8 @@
 package utils
 
-import "unicode"
+import (
+	"unicode"
+)
 
 func UcFirst(s string) string {
 	if s == "" {

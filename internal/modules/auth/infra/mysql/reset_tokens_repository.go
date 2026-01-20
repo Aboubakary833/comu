@@ -39,7 +39,7 @@ func (repo *resetTokensRepository) Find(ctx context.Context, tokenString string)
 func (repo *resetTokensRepository) Store(ctx context.Context, token *domain.ResetToken) error {
 	query := `
 		INSERT INTO reset_tokens (user_id, user_email, token, expired_at, created_at)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (UUID_TO_BIN(?), ?, ?, ?, ?)
 	`
 
 	_, err := repo.db.ExecContext(

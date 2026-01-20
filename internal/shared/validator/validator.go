@@ -1,6 +1,8 @@
 package validator
 
-import "github.com/Oudwins/zog"
+import (
+	"github.com/Oudwins/zog"
+)
 
 type StructValidator struct {
 	schema *zog.StructSchema
@@ -21,7 +23,9 @@ func (validator *StructValidator) Validate(dataPtr any, opt ...zog.ExecOption) S
 		var errors = make(SchemaValidationErrors)
 
 		for _, err := range errList {
-			errors[err.PathString()] = err.Message
+			path := err.PathString()
+			//TODO: check if path is camelcase and transform it to snake_case
+			errors[path] = err.Message
 		}
 
 		return errors

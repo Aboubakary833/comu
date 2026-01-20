@@ -43,6 +43,8 @@ func newResetPasswordHandlers(
 	}
 }
 
+var msgPasswordsDoNotMatch = "Password and password confirmation don't match"
+
 type resetPasswordFormData struct {
 	Email string `form:"email" json:"email"`
 }
@@ -84,7 +86,7 @@ func (h *resetPasswordHandlers) reset(ctx echo.Context) error {
 }
 
 func (h *resetPasswordHandlers) verifyOtp(ctx echo.Context) error {
-	handler := h.otpHandlers.verify(domain.LoginOTP, func(validated verifyOtpFormData) error {
+	handler := h.otpHandlers.verify(domain.ResetPasswordOTP, func(validated verifyOtpFormData) error {
 		token, err := h.genResetTokenUC.Execute(ctx.Request().Context(), validated.Email)
 
 		if err != nil {
@@ -123,6 +125,12 @@ func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
 		return echoRes.JsonValidationErrorResponse(ctx, errList)
 	}
 
+	if data.Password != data.PasswordConfirmation {
+		return echoRes.JsonValidationErrorResponse(
+			ctx, map[string]string{"password": msgPasswordsDoNotMatch},
+		)
+	}
+
 	if err := h.newPasswordUC.Execute(
 		ctx.Request().Context(),
 		data.ResetToken,
@@ -149,7 +157,7 @@ func (h *resetPasswordHandlers) newPassword(ctx echo.Context) error {
 func (h *resetPasswordHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
 	groupRouter := echo.Group("/reset_password", m...)
 
-	groupRouter.POST("/", h.reset)
+	groupRouter.POST("", h.reset)
 	groupRouter.POST("/verify", h.verifyOtp)
 	groupRouter.POST("/resend_otp", h.resendOtp)
 	groupRouter.POST("/new_password", h.newPassword)
