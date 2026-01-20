@@ -190,7 +190,7 @@ func TestResendOtpUseCase(t *testing.T) {
 		notificationService.AssertNotCalled(t, "SendOtpCodeMessage")
 		resendOtpRequestsRepository.AssertNotCalled(t, "Update")
 	})
-	
+
 	t.Run("it should succeed", func(t *testing.T) {
 		notificationService := mockService.NewNotificationServiceMock()
 		otpCodesRepository := mockRepository.NewOtpCodesRepositoryMock()

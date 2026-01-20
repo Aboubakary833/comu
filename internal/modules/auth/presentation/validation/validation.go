@@ -7,7 +7,6 @@ import (
 	"regexp"
 
 	"github.com/Oudwins/zog"
-	
 )
 
 var (
@@ -41,8 +40,8 @@ var RegisterValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 }))
 
 var NewPasswordValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
-	"resetToken": zog.String().Required(zog.Message(msgTokenRequired)),
-	"password":    zog.String().Required(zog.Message(msgPasswordRequired)),
+	"resetToken":           zog.String().Required(zog.Message(msgTokenRequired)),
+	"password":             zog.String().Required(zog.Message(msgPasswordRequired)),
 	"passwordConfirmation": zog.String().Required(zog.Message(msgPasswordShouldBeConfirmed)),
 }))
 
@@ -57,6 +56,6 @@ var OtpCodeValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 }))
 
 var ResendOtpValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
-	"email":        zog.String().Required(zog.Message(msgEmailRequired)).Email(zog.Message(msgInvalidEmail)),
+	"email":       zog.String().Required(zog.Message(msgEmailRequired)).Email(zog.Message(msgInvalidEmail)),
 	"resendToken": zog.String().Required(zog.Message(msgTokenRequired)),
 }))

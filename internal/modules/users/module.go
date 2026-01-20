@@ -1,11 +1,11 @@
 package users
 
 import (
+	"comu/internal/modules/users/application"
 	"comu/internal/modules/users/domain"
 	"comu/internal/modules/users/infra/mysql"
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -14,34 +14,6 @@ var (
 	ErrUserNotFound   = domain.ErrUserNotFound
 	ErrUserEmailTaken = domain.ErrUserEmailTaken
 )
-
-type CreateUserRequest struct {
-	Name     string
-	Email    string
-	Password string
-}
-
-type CreateUserResponse struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-}
-
-type GetUserResponse struct {
-	ID              uuid.UUID
-	Name            string
-	Email           string
-	EmailVerifiedAt *time.Time
-	Active          bool
-	Avatar          string
-	Password        string
-	CreatedAt       time.Time
-	DeletedAt       *time.Time
-}
-
-type UpdateUserPasswordRequest struct {
-	ID          uuid.UUID
-	NewPassword string
-}
 
 type PublicApi interface {
 	CreateUser(context.Context, CreateUserRequest) (*CreateUserResponse, error)
@@ -57,7 +29,18 @@ type UserModule struct {
 
 func NewModule(db *sql.DB) *UserModule {
 	repo := mysql.NewRepository(db)
-	api := newApi(repo)
+
+	//usecases
+	createUserUC := application.NewCreateUserUseCase(repo)
+	getUserByIdUC := application.NewGetUserByIdUseCase(repo)
+	getUserByEmailUC := application.NewGetUserByEmailUseCase(repo)
+	updateUserPasswordUC := application.NewUpdateUserPasswordUseCase(repo)
+	markUserEmailAsVerifiedUC := application.NewMarkUserEmailAsVerifiedUseCase(repo)
+
+	api := newApi(
+		createUserUC, getUserByIdUC, getUserByEmailUC,
+		updateUserPasswordUC, markUserEmailAsVerifiedUC,
+	)
 
 	return &UserModule{
 		api: api,

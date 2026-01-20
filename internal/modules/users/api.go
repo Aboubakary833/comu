@@ -4,23 +4,65 @@ import (
 	"comu/internal/modules/users/application"
 	"comu/internal/modules/users/domain"
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
-type publicApi struct {
-	repo domain.Repository
+type CreateUserRequest struct {
+	Name     string
+	Email    string
+	Password string
 }
 
-func newApi(repo domain.Repository) *publicApi {
+type CreateUserResponse struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+}
+
+type GetUserResponse struct {
+	ID              uuid.UUID
+	Name            string
+	Email           string
+	EmailVerifiedAt *time.Time
+	Active          bool
+	Avatar          string
+	Password        string
+	CreatedAt       time.Time
+	DeletedAt       *time.Time
+}
+
+type UpdateUserPasswordRequest struct {
+	ID          uuid.UUID
+	NewPassword string
+}
+
+type publicApi struct {
+	createUserUC              *application.CreateUserUC
+	getUserByIdUC             *application.GetUserByIdUC
+	getUserByEmailUC          *application.GetUserByEmailUC
+	updateUserPasswordUC      *application.UpdateUserPasswordUC
+	markUserEmailAsVerifiedUC *application.MarkUserEmailAsVerifiedUC
+}
+
+func newApi(
+	createUserUC *application.CreateUserUC,
+	getUserByIdUC *application.GetUserByIdUC,
+	getUserByEmailUC *application.GetUserByEmailUC,
+	updateUserPasswordUC *application.UpdateUserPasswordUC,
+	markUserEmailAsVerifiedUC *application.MarkUserEmailAsVerifiedUC,
+) *publicApi {
 	return &publicApi{
-		repo: repo,
+		createUserUC:              createUserUC,
+		getUserByIdUC:             getUserByIdUC,
+		getUserByEmailUC:          getUserByEmailUC,
+		updateUserPasswordUC:      updateUserPasswordUC,
+		markUserEmailAsVerifiedUC: markUserEmailAsVerifiedUC,
 	}
 }
 
 func (api *publicApi) CreateUser(ctx context.Context, req CreateUserRequest) (*CreateUserResponse, error) {
-	useCase := application.NewCreateUserUseCase(api.repo)
-	user, err := useCase.Execute(
+	user, err := api.createUserUC.Execute(
 		ctx, application.CreateUserInput{
 			Name:     req.Name,
 			Email:    req.Email,
@@ -39,8 +81,7 @@ func (api *publicApi) CreateUser(ctx context.Context, req CreateUserRequest) (*C
 }
 
 func (api *publicApi) GetUserByEmail(ctx context.Context, email string) (*GetUserResponse, error) {
-	useCase := application.NewGetUserByEmailUseCase(api.repo)
-	user, err := useCase.Execute(ctx, email)
+	user, err := api.getUserByEmailUC.Execute(ctx, email)
 
 	if err != nil {
 		return nil, err
@@ -50,8 +91,7 @@ func (api *publicApi) GetUserByEmail(ctx context.Context, email string) (*GetUse
 }
 
 func (api *publicApi) GetUserByID(ctx context.Context, ID uuid.UUID) (*GetUserResponse, error) {
-	useCase := application.NewGetUserByIdUseCase(api.repo)
-	user, err := useCase.Execute(ctx, ID)
+	user, err := api.getUserByIdUC.Execute(ctx, ID)
 
 	if err != nil {
 		return nil, err
@@ -61,13 +101,11 @@ func (api *publicApi) GetUserByID(ctx context.Context, ID uuid.UUID) (*GetUserRe
 }
 
 func (api *publicApi) MarkEmailAsVerified(ctx context.Context, email string) error {
-	useCase := application.NewMarkUserEmailAsVerifiedUseCase(api.repo)
-	return useCase.Execute(ctx, email)
+	return api.markUserEmailAsVerifiedUC.Execute(ctx, email)
 }
 
 func (api *publicApi) UpdateUserPassword(ctx context.Context, req UpdateUserPasswordRequest) error {
-	useCase := application.NewUpdateUserPasswordUseCase(api.repo)
-	return useCase.Execute(ctx, req.ID, req.NewPassword)
+	return api.updateUserPasswordUC.Execute(ctx, req.ID, req.NewPassword)
 }
 
 func (api *publicApi) newGetUserResponse(user *domain.User) *GetUserResponse {

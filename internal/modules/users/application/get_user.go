@@ -11,7 +11,7 @@ type GetUserByIdUC struct {
 	repo domain.Repository
 }
 
-type getUserByEmailUC struct {
+type GetUserByEmailUC struct {
 	repo domain.Repository
 }
 
@@ -21,8 +21,8 @@ func NewGetUserByIdUseCase(repo domain.Repository) *GetUserByIdUC {
 	}
 }
 
-func NewGetUserByEmailUseCase(repo domain.Repository) *getUserByEmailUC {
-	return &getUserByEmailUC{
+func NewGetUserByEmailUseCase(repo domain.Repository) *GetUserByEmailUC {
+	return &GetUserByEmailUC{
 		repo: repo,
 	}
 }
@@ -37,7 +37,7 @@ func (useCase *GetUserByIdUC) Execute(ctx context.Context, ID uuid.UUID) (*domai
 	return user, nil
 }
 
-func (useCase *getUserByEmailUC) Execute(ctx context.Context, email string) (*domain.User, error) {
+func (useCase *GetUserByEmailUC) Execute(ctx context.Context, email string) (*domain.User, error) {
 	user, err := useCase.repo.FindByEmail(ctx, email)
 
 	if err != nil {

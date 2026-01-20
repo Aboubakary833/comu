@@ -13,16 +13,16 @@ type VerifyOtpInput struct {
 }
 
 type VerifyOtpUC struct {
-	otpCodesRepository domain.OtpCodesRepository
+	otpCodesRepository       domain.OtpCodesRepository
 	resendRequestsRepository domain.ResendOtpRequestsRepository
 }
 
 func NewVerifyOtpUseCase(
 	otpCodesRepository domain.OtpCodesRepository,
 	resendRequestsRepository domain.ResendOtpRequestsRepository,
-	) *VerifyOtpUC {
+) *VerifyOtpUC {
 	return &VerifyOtpUC{
-		otpCodesRepository: otpCodesRepository,
+		otpCodesRepository:       otpCodesRepository,
 		resendRequestsRepository: resendRequestsRepository,
 	}
 }
