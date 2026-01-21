@@ -52,8 +52,8 @@ func (useCase *VerifyAccessTokenUC) Execute(ctx context.Context, token string) (
 }
 
 func (useCase *VerifyAccessTokenUC) getClaimsFromToken(token string) (jwt.MapClaims, error) {
-	if strings.HasPrefix(token, "bearer ") {
-		token = strings.Replace(token, "bearer ", "", 1)
+	if strings.HasPrefix(token, "Bearer ") {
+		token = strings.Replace(token, "Bearer ", "", 1)
 	}
 
 	claims, err := useCase.jwtService.ValidateToken(token)

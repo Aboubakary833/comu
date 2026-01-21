@@ -81,6 +81,13 @@ func (repo *postsRepository) List(ctx context.Context, paginator domain.Paginato
 }
 
 func (repo *postsRepository) Store(ctx context.Context, post *domain.Post) error {
+	id, err := uuid.NewV7()
+
+	if err != nil {
+		return err
+	}
+	post.ID = id
+
 	query := `
 		INSERT INTO posts (
 			id, user_id, title, slug,
@@ -88,7 +95,7 @@ func (repo *postsRepository) Store(ctx context.Context, post *domain.Post) error
 		) VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?), ?, ?, ?, ?, ?);
 	`
 
-	_, err := repo.db.ExecContext(
+	_, err = repo.db.ExecContext(
 		ctx, query, post.ID.String(), post.UserID.String(), post.Title,
 		post.Slug, post.Content, post.CreatedAt, post.UpdatedAt,
 	)

@@ -72,6 +72,13 @@ func (h *commentHandlers) list(ctx echo.Context) error {
 		paginator,
 	)
 
+	if next == nil {
+		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
+			"comments": comments,
+			"cursor":   "",
+		})
+	}
+
 	if err != nil {
 		h.logger.Error.Println(err)
 		return echoRes.JsonInternalErrorResponse(ctx)

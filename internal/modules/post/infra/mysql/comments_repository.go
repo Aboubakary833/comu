@@ -95,13 +95,20 @@ func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, pagi
 }
 
 func (repo *commentsRepository) Store(ctx context.Context, comment *domain.Comment) error {
+	id, err := uuid.NewV7()
+
+	if err != nil {
+		return err
+	}
+	comment.ID = id
+
 	query := `
 		INSERT INTO comments (
 			id, post_id, user_id, content, created_at, updated_at
 		) VALUES (UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), ?, ?, ?);
 	`
 
-	_, err := repo.db.ExecContext(
+	_, err = repo.db.ExecContext(
 		ctx, query, comment.ID.String(), comment.PostID.String(), comment.UserID.String(),
 		comment.Content, comment.CreatedAt, comment.UpdatedAt,
 	)

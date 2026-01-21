@@ -53,11 +53,11 @@ func newPostHandlers(
 func (h *postHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFunc) {
 	group := echo.Group("/posts", m...)
 
-	group.POST("/", h.create)
-	group.GET("/", h.list)
-	group.GET("/:slug", h.read)
-	group.PUT("/:post_id", h.update)
-	group.DELETE("/:post_id", h.delete)
+	group.GET("", h.list)
+	group.POST("/create", h.create)
+	group.GET("/read/:slug", h.read)
+	group.PUT("/update/:post_id", h.update)
+	group.DELETE("/delete/:post_id", h.delete)
 }
 
 type postFormData struct {
@@ -77,6 +77,14 @@ func (h *postHandlers) list(ctx echo.Context) error {
 		h.logger.Error.Println(err)
 		return echoRes.JsonInternalErrorResponse(ctx)
 	}
+
+	if next == nil {
+		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
+			"posts":  posts,
+			"cursor": "",
+		})
+	}
+
 	cursor, err := next.ToBase64()
 
 	if err != nil {
@@ -110,9 +118,7 @@ func (h *postHandlers) read(ctx echo.Context) error {
 		return echoRes.JsonInternalErrorResponse(ctx)
 	}
 
-	return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
-		"post": *post,
-	})
+	return echoRes.JsonSuccessWithDataResponse(ctx, *post)
 }
 
 func (h *postHandlers) create(ctx echo.Context) error {
@@ -131,9 +137,7 @@ func (h *postHandlers) create(ctx echo.Context) error {
 			return echoRes.JsonInternalErrorResponse(ctx)
 		}
 
-		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
-			"post": *post,
-		})
+		return echoRes.JsonSuccessWithDataResponse(ctx, *post)
 	})
 
 	return handler(ctx)
@@ -224,7 +228,7 @@ func postPreHandler(afterFunc func(validated postFormData, userID uuid.UUID) err
 	return func(ctx echo.Context) error {
 		var data postFormData
 
-		if err := ctx.Bind(data); err != nil {
+		if err := ctx.Bind(&data); err != nil {
 			return echoRes.JsonInvalidRequestResponse(ctx)
 		}
 

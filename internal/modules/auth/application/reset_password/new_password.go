@@ -52,8 +52,8 @@ func (useCase *SetNewPasswordUC) Execute(ctx context.Context, tokenString string
 	if err != nil {
 		return err
 	}
-	useCase.resetTokensRepository.Delete(ctx, tokenString)
 	useCase.notificationService.SendPasswordChangedMessage(token.UserEmail)
+	useCase.resetTokensRepository.Delete(ctx, tokenString)
 
 	return nil
 }

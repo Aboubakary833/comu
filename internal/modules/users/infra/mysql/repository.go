@@ -55,6 +55,10 @@ func (repo *repository) FindByEmail(ctx context.Context, email string) (*domain.
 }
 
 func (repo *repository) Store(ctx context.Context, user *domain.User) error {
+	if repo.emailIsTaken(ctx, user.Email) {
+		return domain.ErrUserEmailTaken
+	}
+
 	query := `
 	INSERT INTO users (
 		id, name, email, email_verified_at, avatar, active,
@@ -81,13 +85,23 @@ func (repo *repository) Store(ctx context.Context, user *domain.User) error {
 }
 
 func (repo *repository) Update(ctx context.Context, user *domain.User) error {
+	savedUser, err := repo.FindByID(ctx, user.ID)
+
+	if err != nil {
+		return err
+	}
+
+	if savedUser.Email != user.Email && repo.emailIsTaken(ctx, user.Email) {
+		return domain.ErrUserEmailTaken
+	}
+
 	query := `UPDATE users SET name = ?, email = ?, email_verified_at = ?,
 	avatar = ?, active = ?, password = ?, updated_at = ?,
 	deleted_at = ? WHERE id = UUID_TO_BIN(?)`
 
 	user.UpdatedAt = time.Now()
 
-	_, err := repo.db.ExecContext(
+	_, err = repo.db.ExecContext(
 		ctx, query, user.Name, user.Email, user.EmailVerifiedAt,
 		user.Avatar, user.Active, user.Password,
 		user.UpdatedAt, user.DeletedAt, user.ID,
@@ -104,4 +118,14 @@ func (repo *repository) Delete(ctx context.Context, user *domain.User) error {
 	_, err := repo.db.ExecContext(ctx, query, deleteTime, user.ID)
 
 	return err
+}
+
+func (repo *repository) emailIsTaken(ctx context.Context, email string) bool {
+	user, err := repo.FindByEmail(ctx, email)
+
+	if err != nil && errors.Is(err, domain.ErrUserNotFound) {
+		return false
+	}
+
+	return user != nil
 }
