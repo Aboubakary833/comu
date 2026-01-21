@@ -25,8 +25,13 @@ var PostValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 		Min(10, zog.Message(msgPostContentTooShort)).Max(620, zog.Message(msgPostContentTooShort)),
 }))
 
-var CommentValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
-	"post_id": zog.String().Required(zog.Message(msgPostIdRequired)),
+var CreateCommentValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
+	"postId": zog.String().Required(zog.Message(msgPostIdRequired)),
+	"content": zog.String().Required(zog.Message(msgContentRequired)).
+		Min(10, zog.Message(msgCommentContentTooShort)).Max(120, zog.Message(msgCommentContentTooLong)),
+}))
+
+var UpdateCommentValidator = validator.NewStructValidator(zog.Struct(zog.Shape{
 	"content": zog.String().Required(zog.Message(msgContentRequired)).
 		Min(10, zog.Message(msgCommentContentTooShort)).Max(120, zog.Message(msgCommentContentTooLong)),
 }))

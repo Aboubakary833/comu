@@ -13,6 +13,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var (
+	msgCommentUpdated = "Your comment has been successfully updated."
+	msgCommentDeleted = "Your comment has been successfully deleted."
+)
+
 type commentHandlers struct {
 	listCommentsUC  *comments.ListCommentsUC
 	createCommentUC *comments.CreateCommentUC
@@ -45,12 +50,16 @@ func (h *commentHandlers) RegisterRoutes(echo *echo.Echo, m ...echo.MiddlewareFu
 
 	group.GET("/list/:post_id", h.list)
 	group.POST("/create", h.create)
-	group.PUT("/update/:comment_id", h.list)
-	group.DELETE("/delete/:comment_id", h.list)
+	group.PUT("/update/:comment_id", h.update)
+	group.DELETE("/delete/:comment_id", h.delete)
 }
 
-type defaultCommentFormData struct {
-	PostID  string `form:"post_id" json:"post_id"`
+type createCommentFormData struct {
+	PostId  string `form:"post_id" json:"post_id"`
+	Content string `form:"content" json:"content"`
+}
+
+type updateCommentFormData struct {
 	Content string `form:"content" json:"content"`
 }
 
@@ -97,70 +106,101 @@ func (h *commentHandlers) list(ctx echo.Context) error {
 }
 
 func (h *commentHandlers) create(ctx echo.Context) error {
-	handler := commentPreHandler(func(authorID uuid.UUID, validated defaultCommentFormData) error {
+	var data createCommentFormData
 
-		postID, err := uuid.Parse(validated.PostID)
+	if err := ctx.Bind(&data); err != nil {
+		return echoRes.JsonInvalidRequestResponse(ctx)
+	}
 
-		if err != nil {
-			return echoRes.JsonUnauthorizedResponse(
-				ctx, unauthorized,
-				domain.ErrUnauthorized.Error(),
-			)
-		}
+	if errList := validation.CreateCommentValidator.Validate(&data); errList != nil {
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
+	}
+	id := ctx.Get(auth.AuthUserIdCtxKey).(string)
+	userID, err := uuid.Parse(id)
 
-		comment, err := h.createCommentUC.Execute(
-			ctx.Request().Context(),
-			comments.CreateCommentInput{
-				PostID:   postID,
-				AuthorID: authorID,
-				Content:  validated.Content,
-			},
+	if err != nil {
+		return echoRes.JsonUnauthorizedResponse(
+			ctx, unauthorized,
+			domain.ErrUnauthorized.Error(),
 		)
+	}
 
-		if err != nil {
-			h.logger.Error.Println(err)
-			return echoRes.JsonInternalErrorResponse(ctx)
-		}
+	postID, err := uuid.Parse(data.PostId)
 
-		return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
-			"comment": *comment,
-		})
+	if err != nil {
+		return echoRes.JsonUnauthorizedResponse(
+			ctx, unauthorized,
+			domain.ErrUnauthorized.Error(),
+		)
+	}
+
+	comment, err := h.createCommentUC.Execute(
+		ctx.Request().Context(),
+		comments.CreateCommentInput{
+			PostID:   postID,
+			AuthorID: userID,
+			Content:  data.Content,
+		},
+	)
+
+	if err != nil {
+		h.logger.Error.Println(err)
+		return echoRes.JsonInternalErrorResponse(ctx)
+	}
+
+	return echoRes.JsonSuccessWithDataResponse(ctx, map[string]any{
+		"comment": *comment,
 	})
-
-	return handler(ctx)
 }
 
 func (h *commentHandlers) update(ctx echo.Context) error {
-	handler := commentPreHandler(func(authorID uuid.UUID, validated defaultCommentFormData) error {
-		commentID, err := uuid.Parse(ctx.Param("comment_id"))
+	var data updateCommentFormData
 
-		if err != nil {
-			return echoRes.JsonNotFoundResponse(
-				ctx, domain.ErrCommentNotFound.Error(),
-			)
+	if err := ctx.Bind(&data); err != nil {
+		return echoRes.JsonInvalidRequestResponse(ctx)
+	}
+
+	if errList := validation.UpdateCommentValidator.Validate(&data); errList != nil {
+		return echoRes.JsonValidationErrorResponse(ctx, errList)
+	}
+
+	id := ctx.Get(auth.AuthUserIdCtxKey).(string)
+	h.logger.Info.Println(id)
+	userID, err := uuid.Parse(id)
+
+	if err != nil {
+		return echoRes.JsonUnauthorizedResponse(
+			ctx, unauthorized,
+			domain.ErrUnauthorized.Error(),
+		)
+	}
+
+	commentID, err := uuid.Parse(ctx.Param("comment_id"))
+
+	if err != nil {
+		return echoRes.JsonNotFoundResponse(
+			ctx, domain.ErrCommentNotFound.Error(),
+		)
+	}
+
+	if err := h.updateCommentUC.Execute(
+		ctx.Request().Context(),
+		commentID, userID, data.Content,
+	); err != nil {
+		switch {
+		case errors.Is(err, domain.ErrCommentNotFound):
+			return echoRes.JsonNotFoundResponse(ctx, err.Error())
+
+		case errors.Is(err, domain.ErrUnauthorized):
+			return echoRes.JsonForbiddenResponse(ctx, err.Error())
+
+		default:
+			h.logger.Error.Println(err)
+			return echoRes.JsonInternalErrorResponse(ctx)
 		}
+	}
 
-		if err := h.updateCommentUC.Execute(
-			ctx.Request().Context(),
-			commentID, authorID, validated.Content,
-		); err != nil {
-			switch {
-			case errors.Is(err, domain.ErrCommentNotFound):
-				return echoRes.JsonNotFoundResponse(ctx, err.Error())
-
-			case errors.Is(err, domain.ErrUnauthorized):
-				return echoRes.JsonForbiddenResponse(ctx, err.Error())
-
-			default:
-				h.logger.Error.Println(err)
-				return echoRes.JsonInternalErrorResponse(ctx)
-			}
-		}
-
-		return echoRes.JsonSuccessMessageResponse(ctx, "Your comment has successfully been updated.")
-	})
-
-	return handler(ctx)
+	return echoRes.JsonSuccessMessageResponse(ctx, msgCommentUpdated)
 }
 
 func (h *commentHandlers) delete(ctx echo.Context) error {
@@ -199,30 +239,5 @@ func (h *commentHandlers) delete(ctx echo.Context) error {
 		}
 	}
 
-	return echoRes.JsonSuccessMessageResponse(ctx, "Your comment has successfully been deleted.")
-}
-
-func commentPreHandler(afterFunc func(authorID uuid.UUID, validated defaultCommentFormData) error) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		var data defaultCommentFormData
-
-		if err := ctx.Bind(data); err != nil {
-			return echoRes.JsonInvalidRequestResponse(ctx)
-		}
-
-		if errList := validation.CommentValidator.Validate(&data); errList != nil {
-			return echoRes.JsonValidationErrorResponse(ctx, errList)
-		}
-		id := ctx.Get(auth.AuthUserIdCtxKey).(string)
-		userID, err := uuid.Parse(id)
-
-		if err != nil {
-			return echoRes.JsonUnauthorizedResponse(
-				ctx, unauthorized,
-				domain.ErrUnauthorized.Error(),
-			)
-		}
-
-		return afterFunc(userID, data)
-	}
+	return echoRes.JsonSuccessMessageResponse(ctx, msgCommentDeleted)
 }

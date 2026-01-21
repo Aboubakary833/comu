@@ -74,7 +74,7 @@ func (repo *commentsRepository) List(ctx context.Context, postID uuid.UUID, pagi
 		SELECT *
 		FROM comments
 		WHERE
-			post_id = UUID_TO_BIN(?)
+			post_id = UUID_TO_BIN(?) AND
 			(created_at < ?)
 			OR (created_at = ? AND id < ?)
 		ORDER BY created_at DESC, id DESC
