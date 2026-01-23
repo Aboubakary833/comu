@@ -1,0 +1,75 @@
+services:
+  mysql:
+    container_name: comu-mysql
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - comu-network
+
+  api:
+    container_name: comu-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      APP_KEY: ${APP_KEY:-$(openssl rand -base64 32)}
+      DB_SOURCE: ${DB_USER}:${DB_PASSWORD}@tcp(mysql:${DB_PORT})/${DB_NAME}?parseTime=true
+      MAIL_HOST: mailhog
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - comu-network
+
+  migrate:
+    container_name: comu-migrate
+    image: golang:1.25-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      GOOSE_DBSTRING: ${DB_USER}:${DB_PASSWORD}@tcp(mysql:${DB_PORT})/${DB_NAME}?parseTime=true
+    depends_on:
+      mysql:
+        condition: service_healthy
+    entrypoint: ["sh", "-c", "go install github.com/pressly/goose/v3/cmd/goose@latest && goose --dir=/app/migrations up"]
+    networks:
+      - comu-network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: comu-mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - comu-network
+
+volumes:
+  mysql_data:
+
+networks:
+  comu-network:
+    driver: bridge
