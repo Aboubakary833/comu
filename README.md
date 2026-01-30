@@ -101,4 +101,4 @@ Each module follows the same structure:
 ## Running the project
 
 ```sh
-	mv .env.example && docker compose up -d
+	mv .env.example .env && docker compose up -d
